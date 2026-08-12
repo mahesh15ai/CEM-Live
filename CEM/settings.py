@@ -64,13 +64,13 @@ TEMPLATES = [
 # Custom User Model Registration
 AUTH_USER_MODEL = 'accounts.User'
 
-# 📌 Supabase Session Pooler (Port 5432)
-DATABASE_URL = "postgresql://postgres.uzlhvmcghcdzeyxqqebs:Maheshmahi150904@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+# 📌 Supabase Transaction Pooler (Port 6543 - Max Connections Fix)
+DATABASE_URL = "postgresql://postgres.uzlhvmcghcdzeyxqqebs:Maheshmahi150904@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 
 DATABASES = {
     'default': dj_database_url.config(
         default=DATABASE_URL,
-        conn_max_age=600,
+        conn_max_age=0,  # Serverless Vercel साठी कनेक्शन तात्काळ बंद करणे आवश्यक आहे
         ssl_require=True
     )
 }
@@ -100,7 +100,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # 📌 Media Files Settings (Vercel Read-Only System Fix)
 MEDIA_URL = '/media/'
 
-# Vercel वर असल्यास /tmp फोल्डर वापरा, अन्यथा लोकल media फोल्डर
 if os.environ.get('VERCEL') or os.path.exists('/var/task'):
     MEDIA_ROOT = Path('/tmp/media')
 else:
