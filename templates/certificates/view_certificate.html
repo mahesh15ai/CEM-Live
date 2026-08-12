@@ -2,62 +2,68 @@
 {% load static %}
 
 {% block content %}
-<!-- Print CSS with Fixed A4 Landscape Dimensions -->
+<!-- Print CSS Optimized for Mobile & Desktop Browser Printing -->
 <style>
     @media print {
+        /* A4 Landscape फोर्स करणे */
         @page {
-            size: A4 landscape;
-            margin: 0;
+            size: A4 landscape !important;
+            margin: 0mm !important;
         }
-        
-        /* बेस लेआउट रीसेट */
+
         html, body {
             width: 297mm !important;
             height: 210mm !important;
-            background: white !important;
             margin: 0 !important;
             padding: 0 !important;
+            background: #ffffff !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            overflow: hidden !important;
         }
 
+        /* इतर सर्व एलिमेंट्स लपवणे */
         body * {
             visibility: hidden;
         }
 
-        /* सर्टीफिकेटची मुख्य फ्रेम फिक्स A4 आकारात लॉक करा */
+        /* फक्त सर्टिफिकेट दाखवणे */
         #printable-certificate, #printable-certificate * {
             visibility: visible;
         }
 
         #printable-certificate {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 297mm !important;
-            height: 210mm !important;
-            border-width: 12px !important;
+            position: relative !important;
+            width: 280mm !important;
+            height: 195mm !important;
+            margin: 5mm auto !important;
+            border-width: 10px !important;
             border-color: #5C061C !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            padding: 15mm 20mm !important;
+            padding: 8mm 12mm !important;
             background: #ffffff !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
         }
 
-        /* मोबाईलचे छोटे फॉन्ट साईझ प्रिंन्टिंग दरम्यान फिक्स करा */
-        .print-title { font-size: 26px !important; }
-        .print-subtitle { font-size: 32px !important; }
-        .print-name { font-size: 28px !important; }
-        .print-event { font-size: 22px !important; }
-        .print-text { font-size: 14px !important; }
+        /* फिक्स लाईट फॉन्ट साईझ - प्रिंटिंगसाठी */
+        .print-title { font-size: 22px !important; }
+        .print-subtitle { font-size: 26px !important; }
+        .print-name { font-size: 24px !important; }
+        .print-event { font-size: 18px !important; }
+        .print-text { font-size: 13px !important; }
+        
+        /* ४ कॉलम एकाच लाईनमध्ये ठेवणे */
         .print-grid { 
             display: grid !important; 
             grid-template-columns: repeat(4, minmax(0, 1fr)) !important; 
-            gap: 1rem !important; 
+            gap: 0.5rem !important; 
+            align-items: end !important;
         }
 
         .no-print {
