@@ -2,35 +2,64 @@
 {% load static %}
 
 {% block content %}
-<!-- Print CSS to force Landscape Mode while Printing -->
+<!-- Print CSS with Fixed A4 Landscape Dimensions -->
 <style>
     @media print {
         @page {
             size: A4 landscape;
             margin: 0;
         }
-        body {
+        
+        /* बेस लेआउट रीसेट */
+        html, body {
+            width: 297mm !important;
+            height: 210mm !important;
             background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
+
         body * {
             visibility: hidden;
         }
+
+        /* सर्टीफिकेटची मुख्य फ्रेम फिक्स A4 आकारात लॉक करा */
         #printable-certificate, #printable-certificate * {
             visibility: visible;
         }
+
         #printable-certificate {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100vw;
-            height: 100vh;
-            border-width: 14px !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 297mm !important;
+            height: 210mm !important;
+            border-width: 12px !important;
             border-color: #5C061C !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            padding: 2.5rem !important;
+            padding: 15mm 20mm !important;
             background: #ffffff !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
         }
+
+        /* मोबाईलचे छोटे फॉन्ट साईझ प्रिंन्टिंग दरम्यान फिक्स करा */
+        .print-title { font-size: 26px !important; }
+        .print-subtitle { font-size: 32px !important; }
+        .print-name { font-size: 28px !important; }
+        .print-event { font-size: 22px !important; }
+        .print-text { font-size: 14px !important; }
+        .print-grid { 
+            display: grid !important; 
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important; 
+            gap: 1rem !important; 
+        }
+
         .no-print {
             display: none !important;
         }
@@ -40,7 +69,7 @@
 <div class="max-w-5xl mx-auto space-y-5 my-2 sm:my-6 px-1 sm:px-0">
     
     <!-- Premium Horizontal Landscape Certificate Frame -->
-    <div id="printable-certificate" class="bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30 p-4 sm:p-10 md:p-12 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border-4 sm:border-[12px] border-brand-600 relative overflow-hidden text-center flex flex-col justify-between min-h-none sm:min-h-[600px]">
+    <div id="printable-certificate" class="bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30 p-4 sm:p-10 md:p-12 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl border-4 sm:border-[12px] border-brand-600 relative overflow-hidden text-center flex flex-col justify-between min-h-[500px] sm:min-h-[600px]">
         
         <!-- Background Decorative Elements -->
         <div class="absolute inset-1.5 sm:inset-3 border-2 border-brand-accent/80 pointer-events-none rounded-xl sm:rounded-2xl"></div>
@@ -54,14 +83,14 @@
 
         <!-- Header: Logo & College Information -->
         <div class="space-y-1 sm:space-y-2 relative z-10 pt-1 sm:pt-2">
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-5">
+            <div class="flex flex-row items-center justify-center gap-3 sm:gap-5">
                 <!-- College Logo -->
                 <div class="w-12 h-12 sm:w-20 sm:h-20 bg-white p-1 sm:p-1.5 rounded-xl sm:rounded-2xl shadow border sm:border-2 border-brand-accent flex items-center justify-center flex-shrink-0">
                     <img src="{% static 'images/logo.png' %}" alt="College Logo" class="w-full h-full object-contain">
                 </div>
-                <div class="text-center sm:text-left">
-                    <h1 class="text-base sm:text-2xl md:text-3xl font-black text-brand-700 uppercase tracking-wide sm:tracking-widest leading-tight">Vishwabharti Mahavidyalaya</h1>
-                    <p class="text-[9px] sm:text-xs text-slate-600 font-bold uppercase tracking-wider mt-0.5 flex items-center justify-center sm:justify-start gap-1.5">
+                <div class="text-left">
+                    <h1 class="print-title text-base sm:text-2xl md:text-3xl font-black text-brand-700 uppercase tracking-wide sm:tracking-widest leading-tight">Vishwabharti Mahavidyalaya</h1>
+                    <p class="text-[9px] sm:text-xs text-slate-600 font-bold uppercase tracking-wider mt-0.5 flex items-center justify-start gap-1.5">
                         <span>CIDCO, Nanded - 431606</span>
                     </p>
                     <p class="text-[8px] sm:text-[11px] text-brand-600 font-bold tracking-tight mt-0.5">
@@ -75,26 +104,26 @@
         <!-- Certificate Title -->
         <div class="my-2 sm:my-3 relative z-10">
             <span class="text-[8px] sm:text-[10px] font-black uppercase tracking-widest sm:tracking-[0.3em] text-brand-accent bg-brand-700/5 px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-full border border-brand-accent/20">Official Document</span>
-            <h2 class="text-lg sm:text-3xl md:text-4xl font-serif font-black text-slate-900 uppercase tracking-wide italic mt-1.5 sm:mt-2">Certificate of {{ cert.certificate_type }}</h2>
+            <h2 class="print-subtitle text-lg sm:text-3xl md:text-4xl font-serif font-black text-slate-900 uppercase tracking-wide italic mt-1.5 sm:mt-2">Certificate of {{ cert.certificate_type }}</h2>
         </div>
 
         <!-- Certificate Body Message -->
         <div class="space-y-1.5 sm:space-y-3 max-w-3xl mx-auto text-slate-800 text-xs sm:text-sm leading-relaxed relative z-10 px-2 sm:px-0">
             <p class="font-serif italic text-xs sm:text-base text-slate-500">This is to proudly certify that</p>
             
-            <h3 class="text-base sm:text-2xl md:text-3xl font-black text-brand-600 tracking-wide underline underline-offset-4 sm:underline-offset-8 decoration-brand-accent/80">
+            <h3 class="print-name text-base sm:text-2xl md:text-3xl font-black text-brand-600 tracking-wide underline underline-offset-4 sm:underline-offset-8 decoration-brand-accent/80">
                 {{ cert.student.user.get_full_name }}
             </h3>
             
-            <p class="font-medium text-slate-600 text-[10px] sm:text-sm pt-0.5">
+            <p class="print-text font-medium text-slate-600 text-[10px] sm:text-sm pt-0.5">
                 ID: <strong class="font-mono text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{{ cert.student.student_id }}</strong> &nbsp;|&nbsp; 
                 Course: <strong class="text-slate-900">{{ cert.student.course }} ({{ cert.student.year }})</strong>
             </p>
             
-            <p class="pt-0.5 font-serif italic text-slate-600 text-[10px] sm:text-sm">has successfully been awarded this certificate for</p>
+            <p class="font-serif italic text-slate-600 text-[10px] sm:text-sm pt-0.5">has successfully been awarded this certificate for</p>
             
             <div class="inline-block bg-gradient-to-r from-amber-100/80 via-amber-50 to-amber-100/80 px-4 sm:px-8 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl border sm:border-2 border-brand-accent/40 shadow-sm">
-                <span class="font-black text-slate-900 text-xs sm:text-lg md:text-xl">{{ cert.title }}</span>
+                <span class="print-event font-black text-slate-900 text-xs sm:text-lg md:text-xl">{{ cert.title }}</span>
             </div>
             
             {% if cert.description %}
@@ -103,7 +132,7 @@
         </div>
 
         <!-- Footer Section: Issue Date, Verification QR, Official Medal & Authorized Signatory -->
-        <div class="pt-3 sm:pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-2 items-end text-[10px] sm:text-xs font-bold text-slate-700 relative z-10 border-t border-slate-200/80 mt-3 sm:mt-4">
+        <div class="print-grid pt-3 sm:pt-6 grid grid-cols-4 gap-2 items-end text-[10px] sm:text-xs font-bold text-slate-700 relative z-10 border-t border-slate-200/80 mt-3 sm:mt-4">
             
             <!-- Column 1: Issue Date & Ref ID -->
             <div class="text-left space-y-0.5">
@@ -113,7 +142,7 @@
             </div>
 
             <!-- Column 2: Official Gold Seal Badge -->
-            <div class="text-center order-first sm:order-none col-span-2 sm:col-span-1 mb-2 sm:mb-0">
+            <div class="text-center">
                 <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-full bg-gradient-to-tr from-amber-500 via-amber-300 to-amber-600 p-0.5 shadow-md flex items-center justify-center">
                     <div class="w-full h-full rounded-full border border-dashed border-amber-900/40 flex flex-col items-center justify-center text-amber-950 p-1">
                         <i class="fa-solid fa-ribbon text-xs sm:text-lg"></i>
@@ -123,8 +152,8 @@
             </div>
 
             <!-- Column 3: Verification QR Code -->
-            <div class="text-center hidden sm:block">
-                <img src="data:image/png;base64,{{ qr_b64 }}" class="w-14 h-14 sm:w-20 sm:h-20 mx-auto border sm:border-2 border-brand-600 p-1 bg-white rounded-lg sm:rounded-xl shadow-sm">
+            <div class="text-center">
+                <img src="data:image/png;base64,{{ qr_b64 }}" class="w-12 h-12 sm:w-20 sm:h-20 mx-auto border sm:border-2 border-brand-600 p-0.5 sm:p-1 bg-white rounded-lg sm:rounded-xl shadow-sm">
                 <span class="text-[7px] sm:text-[8px] font-mono text-slate-400 block mt-0.5 uppercase tracking-tight">Scan to Verify</span>
             </div>
 
