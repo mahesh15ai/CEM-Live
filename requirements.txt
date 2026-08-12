@@ -1,4 +1,4 @@
-﻿asgiref>=3.8.0
+asgiref>=3.8.0
 colorama>=0.4.6
 dj-database-url>=2.1.0
 Django>=5.0
