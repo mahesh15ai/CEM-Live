@@ -89,7 +89,7 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
-# Static & Media Files Settings for Vercel
+# Static Files Settings for Vercel
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
@@ -97,8 +97,14 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# 📌 Media Files Settings (Vercel Read-Only System Fix)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+# Vercel वर असल्यास /tmp फोल्डर वापरा, अन्यथा लोकल media फोल्डर
+if os.environ.get('VERCEL') or os.path.exists('/var/task'):
+    MEDIA_ROOT = Path('/tmp/media')
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
