@@ -7,10 +7,13 @@ from django.db import models
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
-# 📌 Cloudinary Storage चा थेट वापर करण्यासाठी Import
+# 📌 Cloudinary Storage क्लास डायरेक्ट इम्पोर्ट करा
 from cloudinary_storage.storage import MediaCloudinaryStorage
 
 from accounts.models import User
+
+# Cloudinary स्टोरेजचा ग्लोबल ऑब्जेक्ट (Direct Instance)
+cloudinary_storage_instance = MediaCloudinaryStorage()
 
 
 class StudentProfile(models.Model):
@@ -25,9 +28,9 @@ class StudentProfile(models.Model):
     roll_number = models.IntegerField()
     dob = models.DateField(null=True, blank=True)
 
-    # 📌 storage=MediaCloudinaryStorage() लावल्याने Django लोकल डिस्कवर जाणारच नाही
-    photo = models.ImageField(upload_to='students/photos/', default='students/default.png', storage=MediaCloudinaryStorage())
-    qr_code = models.ImageField(upload_to='students/qr/', blank=True, null=True, storage=MediaCloudinaryStorage())
+    # 📌 storage प्रॉपर्टी सेट केली आहे
+    photo = models.ImageField(upload_to='students/photos/', default='students/default.png', storage=cloudinary_storage_instance)
+    qr_code = models.ImageField(upload_to='students/qr/', blank=True, null=True, storage=cloudinary_storage_instance)
     
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -72,20 +75,25 @@ class StudentProfile(models.Model):
 
             self.student_id = new_id
 
-        # 2. Save base object first to commit Student ID
+        # 2. First Save to database
         super().save(*args, **kwargs)
 
-        # 3. Auto-generate QR Code Image directly to Cloudinary
+        # 3. Auto-generate QR Code direkt to Cloudinary Storage without touching local OS FileSystem
         if not self.qr_code and self.student_id:
             qr_text = f"STUDENT_PASS:{self.student_id}"
             qr_img = qrcode.make(qr_text)
             
             buffer = BytesIO()
             qr_img.save(buffer, format='PNG')
-            file_name = f"qr_{self.student_id}.png"
             
-            # ContentFile थेट Cloudinary Storage वर सेव्ह करेल
-            self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
+            file_name = f"students/qr/qr_{self.student_id}.png"
+            content = ContentFile(buffer.getvalue())
+            
+            # 📌 बघा इथे आपण थेट Cloudinary Instance द्वारे फाईल सेव्ह करत आहोत!
+            saved_path = cloudinary_storage_instance.save(file_name, content)
+            
+            # Database मधील Name अपडेट करा
+            self.qr_code.name = saved_path
             super().save(update_fields=['qr_code'])
 
 
@@ -93,7 +101,7 @@ class BannerImage(models.Model):
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=250, blank=True)
     badge_text = models.CharField(max_length=100, default="Annual Event")
-    image = models.ImageField(upload_to='banners/', storage=MediaCloudinaryStorage())
+    image = models.ImageField(upload_to='banners/', storage=cloudinary_storage_instance)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
