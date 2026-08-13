@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en" class="h-full bg-slate-50 light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,8 +8,15 @@
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Theme Configuration Script (Light/Dark Mode Only) -->
     <script>
+        // 1. Get saved theme preference from LocalStorage (default 'light')
+        const savedMode = localStorage.getItem('app_theme_mode') || 'light';
+
+        // 2. Configure Tailwind with Dark Mode support & Maroon Brand identity
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -28,6 +35,15 @@
                     }
                 }
             }
+        };
+
+        // 3. Apply Dark/Light Class on Document Head immediately
+        if (savedMode === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
         }
     </script>
     
@@ -35,7 +51,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="h-full font-sans antialiased text-slate-800 bg-slate-50 flex flex-col md:flex-row overflow-x-hidden">
+<body class="h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-x-hidden transition-colors duration-300">
 
     {% if user.is_authenticated %}
     <!-- Mobile Navigation Top Bar -->
@@ -55,7 +71,7 @@
     </div>
 
     <!-- Always Fixed Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-brand-700 text-white flex flex-col justify-between flex-shrink-0 shadow-2xl z-40 h-screen overflow-y-auto">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-all duration-300 ease-in-out w-64 bg-brand-700 text-white flex flex-col justify-between flex-shrink-0 shadow-2xl z-40 h-screen overflow-y-auto">
         <div>
             <!-- Brand Logo Header -->
             <div class="p-5 border-b border-brand-600/60 flex items-center space-x-3 bg-brand-800/40">
@@ -73,39 +89,39 @@
             <nav class="p-3 space-y-1 text-sm font-medium">
                 {% if user.is_superuser or user.is_staff or user.is_admin %}
                 <!-- Admin Links -->
-                <a href="{% url 'student_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_list' or current_url == 'edit_student' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'student_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_list' or current_url == 'edit_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-user-graduate w-5 {% if current_url == 'student_list' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Students Directory</span>
                 </a>
 
-                <a href="{% url 'add_student' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_student' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'add_student' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-user-plus w-5 {% if current_url == 'add_student' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Register Student</span>
                 </a>
 
-                <a href="{% url 'add_banner' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_banner' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'add_banner' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_banner' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-image w-5 {% if current_url == 'add_banner' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
                     <span>+ Add Carousel Banner</span>
                 </a>
 
-                <a href="{% url 'add_announcement' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_announcement' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'add_announcement' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_announcement' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-bullhorn w-5 {% if current_url == 'add_announcement' %}text-brand-600{% else %}text-emerald-400{% endif %}"></i>
                     <span>+ Post Announcement</span>
                 </a>
 
-                <a href="{% url 'scan_attendance' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'scan_attendance' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'scan_attendance' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'scan_attendance' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-qrcode w-5 {% if current_url == 'scan_attendance' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Attendance Management</span>
                 </a>
                 {% else %}
                 <!-- Student Self-Service Links -->
                 {% if user.student_profile %}
-                <a href="{% url 'student_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_dashboard' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'student_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-house w-5 {% if current_url == 'student_dashboard' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Student Home</span>
                 </a>
 
-                <a href="{% url 'student_profile_view' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_profile_view' or current_url == 'edit_my_profile' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'student_profile_view' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_profile_view' or current_url == 'edit_my_profile' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-user-gear w-5 {% if current_url == 'student_profile_view' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
                     <span>My Profile & Pass</span>
                 </a>
@@ -113,12 +129,12 @@
                 {% endif %}
 
                 <!-- Shared Links -->
-                <a href="{% url 'event_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'event_list' or current_url == 'create_event' or current_url == 'scan_event_pass' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'event_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'event_list' or current_url == 'create_event' or current_url == 'scan_event_pass' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-calendar-check w-5 {% if current_url == 'event_list' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Events & Expo</span>
                 </a>
 
-                <a href="{% url 'certificate_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'certificate_list' or current_url == 'issue_certificate' or current_url == 'view_certificate' %}bg-white text-brand-700 font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'certificate_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'certificate_list' or current_url == 'issue_certificate' or current_url == 'view_certificate' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-award w-5 {% if current_url == 'certificate_list' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Certificates</span>
                 </a>
@@ -145,13 +161,22 @@
     <!-- Main Content Body -->
     <div class="flex-1 flex flex-col min-w-0 w-full md:pl-64 min-h-screen">
         {% if user.is_authenticated %}
-        <header class="bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <header class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm transition-colors duration-300">
             <div class="flex items-center space-x-3">
-                <h2 class="text-xs sm:text-sm font-bold text-slate-800">Welcome, <span class="text-brand-600">{{ user.first_name|default:user.username }}</span></h2>
+                <h2 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">Welcome, <span class="text-brand-600 dark:text-brand-accent">{{ user.first_name|default:user.username }}</span></h2>
             </div>
             
-            <div class="flex items-center space-x-3">
-                <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-brand-50 text-brand-600 border border-brand-100">
+            <!-- Header Controls: Dark / Normal Mode Toggle Button -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                
+                <!-- Dark Mode Toggle Button -->
+                <button onclick="toggleDarkMode()" class="p-2 px-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-all text-xs font-bold flex items-center space-x-2 border border-slate-200 dark:border-slate-600">
+                    <i id="theme-toggle-icon" class="fa-solid fa-moon"></i>
+                    <span id="theme-toggle-text">Dark</span>
+                </button>
+
+                <!-- User Role Badge -->
+                <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent border border-brand-100 dark:border-slate-600">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>{% if user.is_superuser or user.is_staff or user.is_admin %}Admin{% else %}Student{% endif %}</span>
                 </span>
@@ -160,20 +185,66 @@
         {% endif %}
 
         <main class="p-4 sm:p-6 lg:p-8 flex-grow w-full max-w-7xl mx-auto">
+            <!-- Alert Messages Container with Smooth Fade-out Effect -->
             {% if messages %}
-                {% for message in messages %}
-                    <div class="mb-6 p-4 rounded-xl text-xs sm:text-sm font-semibold shadow-sm border flex items-center space-x-3 {% if message.tags == 'error' %}bg-rose-50 text-rose-700 border-rose-200{% else %}bg-emerald-50 text-emerald-700 border-emerald-200{% endif %}">
-                        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-rose-500{% else %}fa-circle-check text-emerald-500{% endif %} text-lg"></i>
-                        <span>{{ message }}</span>
-                    </div>
-                {% endfor %}
+                <div id="django-messages" class="space-y-3 transition-opacity duration-500 ease-in-out">
+                    {% for message in messages %}
+                        <div class="p-4 rounded-xl text-xs sm:text-sm font-semibold shadow-sm border flex items-center space-x-3 {% if message.tags == 'error' %}bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800{% else %}bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800{% endif %}">
+                            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-rose-500{% else %}fa-circle-check text-emerald-500{% endif %} text-lg"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
 
             {% block content %}{% endblock %}
         </main>
     </div>
 
+    <!-- Theme System, Auto-hide Messages & Mobile Menu JavaScript -->
     <script>
+        // 1. Auto-hide Django Alert Messages after 3 seconds (3000ms)
+        document.addEventListener('DOMContentLoaded', () => {
+            const messagesContainer = document.getElementById('django-messages');
+            if (messagesContainer) {
+                setTimeout(() => {
+                    messagesContainer.style.opacity = '0'; // Fade out
+                    setTimeout(() => {
+                        messagesContainer.remove(); // Remove completely from DOM
+                    }, 500); 
+                }, 3000); 
+            }
+        });
+
+        // 2. Toggle Dark / Light Mode
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('app_theme_mode', isDark ? 'dark' : 'light');
+            updateThemeUI(isDark);
+        }
+
+        function updateThemeUI(isDark) {
+            const icon = document.getElementById('theme-toggle-icon');
+            const text = document.getElementById('theme-toggle-text');
+            
+            if (icon && text) {
+                if (isDark) {
+                    icon.className = 'fa-solid fa-sun text-amber-400';
+                    text.innerText = 'Light';
+                } else {
+                    icon.className = 'fa-solid fa-moon text-slate-600';
+                    text.innerText = 'Dark';
+                }
+            }
+        }
+
+        // 3. Initialize Theme State on DOM Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentMode = localStorage.getItem('app_theme_mode') || 'light';
+            updateThemeUI(currentMode === 'dark');
+        });
+
+        // 4. Mobile Menu Toggle Logic
         const toggleBtn = document.getElementById('mobile-menu-toggle');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
