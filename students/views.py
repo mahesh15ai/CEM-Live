@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.core.mail import send_mail
 from django.conf import settings
-from django.core.files.base import ContentFile
 
 from .models import StudentProfile, BannerImage, AnnouncementNotice, cloudinary_storage_instance
 from events.models import EventRegistration
@@ -56,7 +55,7 @@ def student_list(request):
 
 
 # ----------------------------------------------------
-# 2. CREATE: Register Single Student & Cloudinary QR Save
+# 2. CREATE: Register Single Student & Base64 QR Generation
 # ----------------------------------------------------
 @login_required
 def add_student(request):
@@ -84,7 +83,6 @@ def add_student(request):
 
         default_password = "Password@123"
 
-        # Auth User
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -106,25 +104,22 @@ def add_student(request):
         if photo:
             student_data['photo'] = photo
 
-        # 1. Student Record Create
         student = StudentProfile.objects.create(**student_data)
 
-        # 2. Direct Cloudinary QR Save (Bypassing Vercel OS disk completely)
+        # 📌 Zero OS File System Dependency (Base64 QR Generation)
         try:
             qr_text = f"STUDENT_PASS:{student.student_id}"
             qr_img = qrcode.make(qr_text)
             buffer = io.BytesIO()
             qr_img.save(buffer, format='PNG')
-            
-            file_path = f"students/qr/qr_{student.student_id}.png"
-            saved_cloud_url = cloudinary_storage_instance.save(file_path, ContentFile(buffer.getvalue()))
-            
-            student.qr_code = saved_cloud_url
+            qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+
+            student.qr_code = f"data:image/png;base64,{qr_b64}"
             student.save(update_fields=['qr_code'])
-        except Exception as e:
+        except Exception:
             pass
 
-        # 3. Email Notification
+        # Send Credentials via Email
         subject = 'Welcome to Vishwabharti Mahavidyalaya - Student Credentials'
         email_content = f"""
 Dear {first_name} {last_name},
@@ -165,7 +160,7 @@ Vishwabharti Mahavidyalaya, CIDCO, Nanded
 
 
 # ----------------------------------------------------
-# 3. UPDATE, DELETE & OTHER UTILITIES
+# 3. UPDATE: Edit Student Details (Admin Only)
 # ----------------------------------------------------
 @login_required
 def edit_student(request, student_id):
@@ -211,6 +206,9 @@ def edit_student(request, student_id):
     return render(request, 'students/edit_student.html', {'student': student})
 
 
+# ----------------------------------------------------
+# 4. DELETE: Remove Student Profile & Account
+# ----------------------------------------------------
 @login_required
 def delete_student(request, student_id):
     is_admin = request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False)
@@ -226,6 +224,9 @@ def delete_student(request, student_id):
     return redirect('student_list')
 
 
+# ----------------------------------------------------
+# 5. UTILITIES: Bulk Add, Digital Pass, CSV Export
+# ----------------------------------------------------
 @login_required
 def bulk_add_students(request):
     is_admin = request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False)
@@ -319,6 +320,9 @@ def export_students_excel(request):
     return response
 
 
+# ----------------------------------------------------
+# 6. STUDENT SELF-SERVICE: Profile View & Edit
+# ----------------------------------------------------
 @login_required
 def student_profile_view(request):
     student = get_object_or_404(StudentProfile, user=request.user)
@@ -349,6 +353,9 @@ def edit_my_profile(request):
     return render(request, 'students/edit_my_profile.html', {'student': student})
 
 
+# ----------------------------------------------------
+# 7. ADMIN MANAGEMENT: Add Banner & Announcement
+# ----------------------------------------------------
 @login_required
 def add_banner(request):
     is_admin = request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False)
@@ -400,6 +407,9 @@ def add_announcement(request):
     return render(request, 'students/add_announcement.html')
 
 
+# ----------------------------------------------------
+# 8. STUDENT HOME PAGE / DASHBOARD
+# ----------------------------------------------------
 @login_required
 def student_dashboard(request):
     if request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False):
