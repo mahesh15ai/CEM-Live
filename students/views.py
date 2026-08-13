@@ -105,6 +105,7 @@ def add_student(request):
         if photo:
             student_data['photo'] = photo
 
+        # Creating object triggers models.py save() method which safely handles student_id & QR Code for Cloudinary
         student = StudentProfile.objects.create(**student_data)
 
         # 📧 Send Automated Email Credentials
@@ -141,7 +142,7 @@ Vishwabharti Mahavidyalaya, CIDCO, Nanded
                 fail_silently=True,
             )
             messages.success(request, f"🎓 Student {user.get_full_name()} registered & credentials sent to {email}!")
-        except Exception as e:
+        except Exception:
             messages.success(request, f"🎓 Student registered successfully! ID: {student.student_id}")
 
         return redirect('student_list')

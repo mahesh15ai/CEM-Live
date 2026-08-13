@@ -4,7 +4,7 @@ from io import BytesIO
 from datetime import timedelta
 
 from django.db import models
-from django.core.files import File
+from django.core.files.base import ContentFile
 from django.utils import timezone
 
 from accounts.models import User
@@ -13,7 +13,6 @@ from accounts.models import User
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     
-    # ✅ Fixed: Added blank=True so forms don't reject empty student_id on submit
     student_id = models.CharField(max_length=20, unique=True, blank=True)
     
     department = models.CharField(max_length=100, default='Computer Science & IT')
@@ -71,15 +70,17 @@ class StudentProfile(models.Model):
 
             self.student_id = new_id
 
-        # 2. Auto-generate QR Code Image using the newly created student_id
+        # 2. Auto-generate QR Code Image in-memory using ContentFile for Vercel/Cloudinary compatibility
         if not self.qr_code and self.student_id:
-            qr_text = f"STUDENT:{self.student_id}"
+            qr_text = f"STUDENT_PASS:{self.student_id}"
             qr_img = qrcode.make(qr_text)
             
             buffer = BytesIO()
             qr_img.save(buffer, format='PNG')
             file_name = f"qr_{self.student_id}.png"
-            self.qr_code.save(file_name, File(buffer), save=False)
+            
+            # Use ContentFile to stream memory directly to Cloudinary / Storage Backend
+            self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
 
         super().save(*args, **kwargs)
 
