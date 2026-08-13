@@ -22,10 +22,10 @@ class StudentProfile(models.Model):
     roll_number = models.IntegerField()
     dob = models.DateField(null=True, blank=True)
 
-    # Photo uploading to Cloudinary
+    # Cloudinary image storage
     photo = models.ImageField(upload_to='photos/', blank=True, null=True, storage=cloudinary_storage_instance)
     
-    # 📌 Base64 String मधील QR Code सेव्ह करण्यासाठी TextField (No OS File System dependency)
+    # Base64 String मधील QR Code सेव्ह करण्यासाठी TextField (No OS FileSystem dependency)
     qr_code = models.TextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)

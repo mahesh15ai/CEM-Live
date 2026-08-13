@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import transaction
 
 from .models import StudentProfile, BannerImage, AnnouncementNotice, cloudinary_storage_instance
 from events.models import EventRegistration
@@ -55,7 +56,7 @@ def student_list(request):
 
 
 # ----------------------------------------------------
-# 2. CREATE: Register Single Student & Base64 QR Generation
+# 2. CREATE: Register Single Student (Atomic Transaction)
 # ----------------------------------------------------
 @login_required
 def add_student(request):
@@ -83,45 +84,51 @@ def add_student(request):
 
         default_password = "Password@123"
 
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            password=default_password,
-            first_name=first_name,
-            last_name=last_name
-        )
-
-        student_data = {
-            'user': user,
-            'department': department,
-            'course': course,
-            'year': year,
-            'division': division,
-            'roll_number': roll_number,
-            'dob': dob,
-        }
-
-        if photo:
-            student_data['photo'] = photo
-
-        student = StudentProfile.objects.create(**student_data)
-
-        # 📌 Zero OS File System Dependency (Base64 QR Generation)
         try:
-            qr_text = f"STUDENT_PASS:{student.student_id}"
-            qr_img = qrcode.make(qr_text)
-            buffer = io.BytesIO()
-            qr_img.save(buffer, format='PNG')
-            qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+            # Wrap User + StudentProfile creation inside atomic transaction
+            with transaction.atomic():
+                # 1. Auth User Create
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=default_password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
 
-            student.qr_code = f"data:image/png;base64,{qr_b64}"
-            student.save(update_fields=['qr_code'])
-        except Exception:
-            pass
+                # 2. Student Profile Create
+                student = StudentProfile(
+                    user=user,
+                    department=department,
+                    course=course,
+                    year=year,
+                    division=division,
+                    roll_number=roll_number,
+                    dob=dob
+                )
 
-        # Send Credentials via Email
-        subject = 'Welcome to Vishwabharti Mahavidyalaya - Student Credentials'
-        email_content = f"""
+                if photo:
+                    student.photo = photo
+
+                # Save base profile to get student_id generated
+                student.save()
+
+                # 3. Base64 QR Code Generation (Zero local file write)
+                try:
+                    qr_text = f"STUDENT_PASS:{student.student_id}"
+                    qr_img = qrcode.make(qr_text)
+                    buffer = io.BytesIO()
+                    qr_img.save(buffer, format='PNG')
+                    qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+                    
+                    student.qr_code = f"data:image/png;base64,{qr_b64}"
+                    student.save(update_fields=['qr_code'])
+                except Exception:
+                    pass
+
+            # 4. Email Credentials Sending
+            subject = 'Welcome to Vishwabharti Mahavidyalaya - Student Credentials'
+            email_content = f"""
 Dear {first_name} {last_name},
 
 Welcome to Vishwabharti Mahavidyalaya Enterprise Portal!
@@ -140,21 +147,25 @@ https://cem-live-8hjp.vercel.app/accounts/login/
 
 Best Regards,
 Vishwabharti Mahavidyalaya, CIDCO, Nanded
-        """
+            """
 
-        try:
-            send_mail(
-                subject=subject,
-                message=email_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=True,
-            )
-            messages.success(request, f"🎓 Student {user.get_full_name()} registered & credentials sent to {email}!")
-        except Exception:
-            messages.success(request, f"🎓 Student registered successfully! ID: {student.student_id}")
+            try:
+                send_mail(
+                    subject=subject,
+                    message=email_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+                messages.success(request, f"🎓 Student {user.get_full_name()} registered & credentials sent to {email}!")
+            except Exception:
+                messages.success(request, f"🎓 Student registered successfully! ID: {student.student_id}")
 
-        return redirect('student_list')
+            return redirect('student_list')
+
+        except Exception as e:
+            messages.error(request, f"Error registering student: {str(e)}")
+            return redirect('add_student')
 
     return render(request, 'students/add_student.html')
 
