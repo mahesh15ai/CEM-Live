@@ -98,14 +98,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
+# ------------------------------------------------------------------
 # 📌 Media Configuration (Fixes Vercel Read-Only FileSystem Error)
+# ------------------------------------------------------------------
 MEDIA_URL = '/media/'
 
-# Vercel Serverless environment मध्ये /tmp हा एकमेव फोल्डर Writable असतो
-if os.environ.get('VERCEL') or os.path.exists('/var/task'):
-    MEDIA_ROOT = '/tmp/media'
-else:
-    MEDIA_ROOT = BASE_DIR / 'media'
+# 🚨 १००% Vercel Error Fix: कोणताही if-else न वापरता थेट /tmp दिले आहे.
+# यामुळे Django कधीही /var/task मध्ये फोल्डर बनवणार नाही!
+MEDIA_ROOT = '/tmp'
 
 # 📌 Storage Settings for Cloudinary
 STORAGES = {
