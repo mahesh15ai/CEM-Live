@@ -24,7 +24,6 @@ class StudentProfile(models.Model):
     photo = models.ImageField(upload_to='students/photos/', default='students/default.png')
     qr_code = models.ImageField(upload_to='students/qr/', blank=True, null=True)
     
-    # Registration Timestamp
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -32,14 +31,12 @@ class StudentProfile(models.Model):
 
     @property
     def valid_until(self):
-        """Calculates exact date 1 year from registration day"""
         if self.created_at:
             return self.created_at.date() + timedelta(days=365)
         return None
 
     @property
     def academic_session(self):
-        """Generates dynamic session e.g. 2026-27 based on registration year"""
         if self.created_at:
             start_year = self.created_at.year
             end_year = str(start_year + 1)[-2:]
@@ -47,7 +44,7 @@ class StudentProfile(models.Model):
         return "2026-27"
 
     def save(self, *args, **kwargs):
-        # 1. Auto-generate Student ID (e.g., VBM20260001, VBM20260002) if missing
+        # 1. Auto-generate Student ID
         if not self.student_id:
             existing_ids = StudentProfile.objects.filter(
                 student_id__startswith='VBM'
@@ -70,10 +67,10 @@ class StudentProfile(models.Model):
 
             self.student_id = new_id
 
-        # 2. Save object first to commit ID
+        # 2. Save base object first to commit Student ID
         super().save(*args, **kwargs)
 
-        # 3. Auto-generate QR Code Image directly to Cloudinary using ContentFile
+        # 3. Auto-generate QR Code directly to Cloudinary WITHOUT local directory creation
         if not self.qr_code and self.student_id:
             qr_text = f"STUDENT_PASS:{self.student_id}"
             qr_img = qrcode.make(qr_text)
@@ -82,8 +79,9 @@ class StudentProfile(models.Model):
             qr_img.save(buffer, format='PNG')
             file_name = f"qr_{self.student_id}.png"
             
-            # Directly stream bytes to Cloudinary
-            self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=True)
+            # save=False वापरल्याने Vercel डिस्कवर फोल्डर बनवण्याचा प्रयत्न करत नाही
+            self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
+            super().save(update_fields=['qr_code'])
 
 
 class BannerImage(models.Model):
@@ -104,7 +102,6 @@ class AnnouncementNotice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_valid_24h(self):
-        """ Checks if notice was posted within the last 24 hours """
         return timezone.now() <= self.created_at + timedelta(hours=24)
 
     def __str__(self):
