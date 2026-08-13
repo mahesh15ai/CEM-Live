@@ -11,3 +11,5 @@ psycopg2-binary>=2.9.9
 qrcode>=7.4.2
 sqlparse>=0.4.4
 whitenoise>=6.6.0
+django-cloudinary-storage
+cloudinary

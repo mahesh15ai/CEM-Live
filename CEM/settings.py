@@ -18,7 +18,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+
+    # 📌 Cloudinary Storage (Media Files साठी staticfiles च्या आधी ठेवणे आवश्यक आहे)
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
 
     # Vishwabharti CEM Apps
     'accounts',
@@ -92,18 +96,19 @@ USE_TZ = True
 # Static Files Settings for Vercel
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-
-# Static Output Directory for Vercel Build Process
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# 📌 Media Files Settings (Vercel Read-Only System Fix)
+# 📌 Media Files Settings (Cloudinary Configuration)
 MEDIA_URL = '/media/'
 
-if os.environ.get('VERCEL') or os.path.exists('/var/task'):
-    MEDIA_ROOT = Path('/tmp/media')
-else:
-    MEDIA_ROOT = BASE_DIR / 'media'
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'hhnkhoen',
+    'API_KEY': '977119757646888',
+    'API_SECRET': 's-HAROLo9zUq1kvO_LOw57qZJdA'
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -118,5 +123,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tsome8522@gmail.com'
-EMAIL_HOST_PASSWORD = 'oittzkqatsynbhcd'  # Spaces काढलेले 16-अंकी Gmail App Password
+EMAIL_HOST_PASSWORD = 'oittzkqatsynbhcd'
 DEFAULT_FROM_EMAIL = 'tsome8522@gmail.com'
