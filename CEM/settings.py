@@ -99,12 +99,12 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # ------------------------------------------------------------------
-# 📌 Storage & Compatibility Settings (Fixes Vercel Build & Media Errors)
+# 📌 Media & Storage Settings (Fixes Vercel Build & OS Errno 30)
 # ------------------------------------------------------------------
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/tmp'  # 👈 Vercel वरील [Errno 30] Read-only error फिक्स करते
+MEDIA_ROOT = '/tmp'  # Vercel Writable Folder
 
-# Django 5/6 Storage डिक्शनरी
+# Django 5+ / 6+ STORAGES Dictionary
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -114,8 +114,9 @@ STORAGES = {
     },
 }
 
-# 🚨 cloudiary_storage च्या collectstatic कॉम्पॅटिबिलिटीसाठी ही ओळ अनिवार्य आहे (Fixes AttributeError)
+# 🚨 Legacy compatibility settings for django-cloudinary-storage
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'hhnkhoen',
