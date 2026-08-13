@@ -8,6 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
+from django.core.mail import send_mail
+from django.conf import settings
 
 from .models import StudentProfile, BannerImage, AnnouncementNotice
 from events.models import EventRegistration
@@ -53,7 +55,7 @@ def student_list(request):
 
 
 # ----------------------------------------------------
-# 2. CREATE: Register Single Student
+# 2. CREATE: Register Single Student & Send Email
 # ----------------------------------------------------
 @login_required
 def add_student(request):
@@ -79,10 +81,13 @@ def add_student(request):
             messages.error(request, "A user with this email already exists.")
             return redirect('add_student')
 
+        default_password = "Password@123"
+
+        # Create Auth User
         user = User.objects.create_user(
             username=email,
             email=email,
-            password="Password@123",
+            password=default_password,
             first_name=first_name,
             last_name=last_name
         )
@@ -102,7 +107,43 @@ def add_student(request):
 
         student = StudentProfile.objects.create(**student_data)
 
-        messages.success(request, f"🎓 Student {user.get_full_name()} registered successfully! ID: {student.student_id}")
+        # 📧 Send Automated Email Credentials
+        subject = 'Welcome to Vishwabharti Mahavidyalaya - Student Credentials'
+        email_content = f"""
+Dear {first_name} {last_name},
+
+Welcome to Vishwabharti Mahavidyalaya Enterprise Portal!
+
+Your student account has been successfully registered. Here are your portal login credentials:
+
+----------------------------------------
+Student ID : {student.student_id}
+Username   : {email}
+Password   : {default_password}
+Course     : {course} ({year})
+----------------------------------------
+
+Log in to your account here:
+https://cem-live-8hjp.vercel.app/accounts/login/
+
+Note: Please change your password after logging in for the first time.
+
+Best Regards,
+Vishwabharti Mahavidyalaya, CIDCO, Nanded
+        """
+
+        try:
+            send_mail(
+                subject=subject,
+                message=email_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=True,
+            )
+            messages.success(request, f"🎓 Student {user.get_full_name()} registered & credentials sent to {email}!")
+        except Exception as e:
+            messages.success(request, f"🎓 Student registered successfully! ID: {student.student_id}")
+
         return redirect('student_list')
 
     return render(request, 'students/add_student.html')
@@ -275,14 +316,12 @@ def export_students_excel(request):
 # ----------------------------------------------------
 @login_required
 def student_profile_view(request):
-    """ Allows a logged-in student to view their own profile and QR pass """
     student = get_object_or_404(StudentProfile, user=request.user)
     return render(request, 'students/my_profile.html', {'student': student})
 
 
 @login_required
 def edit_my_profile(request):
-    """ Allows student to update their basic info """
     student = get_object_or_404(StudentProfile, user=request.user)
     user = request.user
 
@@ -310,7 +349,6 @@ def edit_my_profile(request):
 # ----------------------------------------------------
 @login_required
 def add_banner(request):
-    """ Allows Admin to upload new carousel banner images from frontend """
     is_admin = request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False)
     if not is_admin:
         messages.error(request, "Access denied. Admin permissions required.")
@@ -339,14 +377,12 @@ def add_banner(request):
 
 @login_required
 def add_announcement(request):
-    """ Allows Admin to post a new notice/announcement from frontend """
     is_admin = request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False)
     if not is_admin:
         messages.error(request, "Access denied. Admin permissions required.")
         return redirect('student_dashboard')
 
     if request.method == 'POST':
-        # Accept text from 'notice_text' or 'title' input name
         notice_text = request.POST.get('notice_text', '').strip() or request.POST.get('title', '').strip()
 
         if notice_text:
@@ -367,7 +403,6 @@ def add_announcement(request):
 # ----------------------------------------------------
 @login_required
 def student_dashboard(request):
-    """ Dynamic Home Dashboard for Students """
     if request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False):
         return redirect('student_list')
 
@@ -375,8 +410,6 @@ def student_dashboard(request):
     
     banners = BannerImage.objects.filter(is_active=True).order_by('-created_at')
     
-    # 📌 24-HOUR AUTO-EXPIRY FILTER:
-    # Only fetches the notice if created within the last 24 hours
     last_24_hours = timezone.now() - timedelta(hours=24)
     latest_notice = AnnouncementNotice.objects.filter(
         is_active=True,
