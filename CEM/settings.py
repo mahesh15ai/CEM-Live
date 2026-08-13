@@ -98,7 +98,16 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
-# 📌 Django 5.0+ / 6.0+ Storage Settings for Cloudinary
+# 📌 Media Configuration (Fixes Vercel Read-Only FileSystem Error)
+MEDIA_URL = '/media/'
+
+# Vercel Serverless environment मध्ये /tmp हा एकमेव फोल्डर Writable असतो
+if os.environ.get('VERCEL') or os.path.exists('/var/task'):
+    MEDIA_ROOT = '/tmp/media'
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
+
+# 📌 Storage Settings for Cloudinary
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -107,8 +116,6 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-
-MEDIA_URL = '/media/'
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'hhnkhoen',
