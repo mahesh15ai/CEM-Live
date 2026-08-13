@@ -99,15 +99,12 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # ------------------------------------------------------------------
-# 📌 Media Configuration (Fixes Vercel Read-Only FileSystem Error)
+# 📌 Storage & Compatibility Settings (Fixes Vercel Build & Media Errors)
 # ------------------------------------------------------------------
 MEDIA_URL = '/media/'
+MEDIA_ROOT = '/tmp'  # 👈 Vercel वरील [Errno 30] Read-only error फिक्स करते
 
-# 🚨 १००% Vercel Error Fix: कोणताही if-else न वापरता थेट /tmp दिले आहे.
-# यामुळे Django कधीही /var/task मध्ये फोल्डर बनवणार नाही!
-MEDIA_ROOT = '/tmp'
-
-# 📌 Storage Settings for Cloudinary
+# Django 5/6 Storage डिक्शनरी
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -116,6 +113,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# 🚨 cloudiary_storage च्या collectstatic कॉम्पॅटिबिलिटीसाठी ही ओळ अनिवार्य आहे (Fixes AttributeError)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'hhnkhoen',
