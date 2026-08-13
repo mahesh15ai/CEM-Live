@@ -70,7 +70,10 @@ class StudentProfile(models.Model):
 
             self.student_id = new_id
 
-        # 2. Auto-generate QR Code Image in-memory using ContentFile for Vercel/Cloudinary compatibility
+        # 2. Save object first to commit ID
+        super().save(*args, **kwargs)
+
+        # 3. Auto-generate QR Code Image directly to Cloudinary using ContentFile
         if not self.qr_code and self.student_id:
             qr_text = f"STUDENT_PASS:{self.student_id}"
             qr_img = qrcode.make(qr_text)
@@ -79,10 +82,8 @@ class StudentProfile(models.Model):
             qr_img.save(buffer, format='PNG')
             file_name = f"qr_{self.student_id}.png"
             
-            # Use ContentFile to stream memory directly to Cloudinary / Storage Backend
-            self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
-
-        super().save(*args, **kwargs)
+            # Directly stream bytes to Cloudinary
+            self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=True)
 
 
 class BannerImage(models.Model):

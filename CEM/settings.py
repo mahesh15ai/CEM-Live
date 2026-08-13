@@ -19,7 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
 
-    # 📌 Cloudinary Storage (Media Files साठी staticfiles च्या आधी ठेवणे आवश्यक आहे)
+    # 📌 Cloudinary Apps (staticfiles च्या आधी असणे आवश्यक)
     'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
@@ -68,13 +68,13 @@ TEMPLATES = [
 # Custom User Model Registration
 AUTH_USER_MODEL = 'accounts.User'
 
-# 📌 Supabase Transaction Pooler (Port 6543 - Max Connections Fix)
+# 📌 Supabase Database Connection
 DATABASE_URL = "postgresql://postgres.uzlhvmcghcdzeyxqqebs:Maheshmahi150904@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 
 DATABASES = {
     'default': dj_database_url.config(
         default=DATABASE_URL,
-        conn_max_age=0,  # Serverless Vercel साठी कनेक्शन तात्काळ बंद करणे आवश्यक आहे
+        conn_max_age=0,
         ssl_require=True
     )
 }
@@ -93,13 +93,21 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
-# Static Files Settings for Vercel
+# Static Files Settings
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# 📌 Media Files Settings (Cloudinary Configuration)
+# 📌 Django 5.0+ / 6.0+ Storage Settings for Cloudinary
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 MEDIA_URL = '/media/'
 
 CLOUDINARY_STORAGE = {
@@ -107,8 +115,6 @@ CLOUDINARY_STORAGE = {
     'API_KEY': '977119757646888',
     'API_SECRET': 's-HAROLo9zUq1kvO_LOw57qZJdA'
 }
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
