@@ -105,7 +105,7 @@ def add_student(request):
         if photo:
             student_data['photo'] = photo
 
-        # Creating object triggers models.py save() method which safely handles student_id & QR Code for Cloudinary
+        # Object creation safely triggers save() method in models.py which directly uploads to Cloudinary
         student = StudentProfile.objects.create(**student_data)
 
         # 📧 Send Automated Email Credentials

@@ -7,6 +7,9 @@ from django.db import models
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
+# 📌 Cloudinary Storage चा थेट वापर करण्यासाठी Import
+from cloudinary_storage.storage import MediaCloudinaryStorage
+
 from accounts.models import User
 
 
@@ -21,8 +24,10 @@ class StudentProfile(models.Model):
     division = models.CharField(max_length=10, default='A')
     roll_number = models.IntegerField()
     dob = models.DateField(null=True, blank=True)
-    photo = models.ImageField(upload_to='students/photos/', default='students/default.png')
-    qr_code = models.ImageField(upload_to='students/qr/', blank=True, null=True)
+
+    # 📌 storage=MediaCloudinaryStorage() लावल्याने Django लोकल डिस्कवर जाणारच नाही
+    photo = models.ImageField(upload_to='students/photos/', default='students/default.png', storage=MediaCloudinaryStorage())
+    qr_code = models.ImageField(upload_to='students/qr/', blank=True, null=True, storage=MediaCloudinaryStorage())
     
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -70,7 +75,7 @@ class StudentProfile(models.Model):
         # 2. Save base object first to commit Student ID
         super().save(*args, **kwargs)
 
-        # 3. Auto-generate QR Code directly to Cloudinary WITHOUT local directory creation
+        # 3. Auto-generate QR Code Image directly to Cloudinary
         if not self.qr_code and self.student_id:
             qr_text = f"STUDENT_PASS:{self.student_id}"
             qr_img = qrcode.make(qr_text)
@@ -79,7 +84,7 @@ class StudentProfile(models.Model):
             qr_img.save(buffer, format='PNG')
             file_name = f"qr_{self.student_id}.png"
             
-            # save=False वापरल्याने Vercel डिस्कवर फोल्डर बनवण्याचा प्रयत्न करत नाही
+            # ContentFile थेट Cloudinary Storage वर सेव्ह करेल
             self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
             super().save(update_fields=['qr_code'])
 
@@ -88,7 +93,7 @@ class BannerImage(models.Model):
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=250, blank=True)
     badge_text = models.CharField(max_length=100, default="Annual Event")
-    image = models.ImageField(upload_to='banners/')
+    image = models.ImageField(upload_to='banners/', storage=MediaCloudinaryStorage())
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
