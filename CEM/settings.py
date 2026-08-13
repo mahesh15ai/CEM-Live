@@ -19,9 +19,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
 
-    # 📌 Cloudinary Apps (staticfiles च्या आधी असणे आवश्यक)
-    'cloudinary_storage',
+    # 📌 staticfiles ला staticfiles_build साठी cloudinary_storage च्या आधी ठेवा
     'django.contrib.staticfiles',
+    'cloudinary_storage',
     'cloudinary',
 
     # Vishwabharti CEM Apps
@@ -99,10 +99,10 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # ------------------------------------------------------------------
-# 📌 Media & Storage Settings (Fixes Vercel Build & OS Errno 30)
+# 📌 Storage & Compatibility Settings (Fixes Whitenoise & Vercel Errors)
 # ------------------------------------------------------------------
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/tmp'  # Vercel Writable Folder
+MEDIA_ROOT = '/tmp'  # Vercel Read-Only FileSystem Fix
 
 # Django 5+ / 6+ STORAGES Dictionary
 STORAGES = {
@@ -110,12 +110,13 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # 🚨 Missing admin SVG / CSS फाईल्समुळे बिल्ड क्रॅश होऊ नये म्हणून 'CompressedStaticFilesStorage' वापरले आहे
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-# 🚨 Legacy compatibility settings for django-cloudinary-storage
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# 🚨 Legacy Compatibility Settings
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {

@@ -18,8 +18,8 @@ class StudentProfile(models.Model):
     roll_number = models.IntegerField()
     dob = models.DateField(null=True, blank=True)
 
-    # 📌 String Base Storage (Fixes Vercel Build Failure)
-    photo = models.ImageField(upload_to='photos/', blank=True, null=True, storage='cloudinary_storage.storage.MediaCloudinaryStorage')
+    # 📌 storage= काढून टाकल्याने generate_filename ची एरर पूर्णपणे फिक्स होते
+    photo = models.ImageField(upload_to='photos/', blank=True, null=True)
     
     # Base64 QR Code Store (No Local File System dependency)
     qr_code = models.TextField(blank=True, null=True)
@@ -74,7 +74,7 @@ class BannerImage(models.Model):
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=250, blank=True)
     badge_text = models.CharField(max_length=100, default="Annual Event")
-    image = models.ImageField(upload_to='banners/', storage='cloudinary_storage.storage.MediaCloudinaryStorage')
+    image = models.ImageField(upload_to='banners/')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
