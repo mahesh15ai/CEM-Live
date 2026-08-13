@@ -12,7 +12,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.db import transaction
 
-from .models import StudentProfile, BannerImage, AnnouncementNotice, cloudinary_storage_instance
+from .models import StudentProfile, BannerImage, AnnouncementNotice
 from events.models import EventRegistration
 from attendance.models import AttendanceRecord
 from certificates.models import Certificate

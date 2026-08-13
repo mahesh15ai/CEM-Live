@@ -3,11 +3,7 @@ from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
-from cloudinary_storage.storage import MediaCloudinaryStorage
-
 from accounts.models import User
-
-cloudinary_storage_instance = MediaCloudinaryStorage()
 
 
 class StudentProfile(models.Model):
@@ -22,10 +18,10 @@ class StudentProfile(models.Model):
     roll_number = models.IntegerField()
     dob = models.DateField(null=True, blank=True)
 
-    # Cloudinary image storage
-    photo = models.ImageField(upload_to='photos/', blank=True, null=True, storage=cloudinary_storage_instance)
+    # 📌 String Base Storage (Fixes Vercel Build Failure)
+    photo = models.ImageField(upload_to='photos/', blank=True, null=True, storage='cloudinary_storage.storage.MediaCloudinaryStorage')
     
-    # Base64 String मधील QR Code सेव्ह करण्यासाठी TextField (No OS FileSystem dependency)
+    # Base64 QR Code Store (No Local File System dependency)
     qr_code = models.TextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -78,7 +74,7 @@ class BannerImage(models.Model):
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=250, blank=True)
     badge_text = models.CharField(max_length=100, default="Annual Event")
-    image = models.ImageField(upload_to='banners/', storage=cloudinary_storage_instance)
+    image = models.ImageField(upload_to='banners/', storage='cloudinary_storage.storage.MediaCloudinaryStorage')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
