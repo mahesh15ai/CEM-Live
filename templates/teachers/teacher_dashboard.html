@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}Faculty Workspace | Vishwabharti CEM{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl mx-auto pb-10">
+
+    <!-- 1. Enterprise Top Header Bar -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+            <div class="flex items-center space-x-2.5">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-black tracking-wider uppercase bg-brand-50 dark:bg-slate-800 text-brand-600 dark:text-brand-accent border border-brand-200/60 dark:border-slate-700">
+                    Faculty Portal
+                </span>
+                <span class="text-xs text-slate-400 font-bold">•</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Academic Year 2026–27</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+                Prof. {{ request.user.get_full_name|default:request.user.username }}
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                Department of {{ teacher.department|default:"Computer Science & IT" }} | ID: <span class="font-mono font-bold text-slate-700 dark:text-slate-300">{{ teacher.teacher_id }}</span>
+            </p>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="flex items-center flex-wrap gap-2.5">
+            <a href="{% url 'monthly_yearly_report' %}?course={{ course }}&year={{ year }}&division={{ division }}" class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-sm">
+                <i class="fa-solid fa-chart-column text-amber-500"></i>
+                <span>Analytics & Records</span>
+            </a>
+            <a href="{% url 'class_attendance_dashboard' %}" class="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all">
+                <i class="fa-solid fa-clipboard-check"></i>
+                <span>Launch Attendance</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 2. Primary Class Assignment Hero Card -->
+    <div class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-sm p-6 relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+            <div class="flex items-start sm:items-center space-x-4">
+                <div class="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center text-2xl font-bold flex-shrink-0 shadow-inner">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Allocated Class Designation</span>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">
+                        {{ course }} — {{ year }} <span class="text-brand-600 dark:text-brand-accent">(Division {{ division }})</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Assigned as Official Class Coordinator & Attendance Proctor
+                    </p>
+                </div>
+            </div>
+
+            <!-- Real-time Status Badge -->
+            <div class="flex items-center space-x-3 bg-slate-50 dark:bg-slate-900/60 px-4 py-3 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                <div class="text-right">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Today's Class Roll</span>
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200">{{ today|date:"l, d F Y" }}</span>
+                </div>
+                <div>
+                    {% if today_marked %}
+                        <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span>Completed</span>
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span>Pending</span>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Key Performance Indicators (KPI Metrics) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Students -->
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Total Enrolled</p>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-1">{{ total_students }}</h3>
+                <span class="text-[11px] font-semibold text-slate-400">Verified Profiles</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+
+        <!-- Present Today -->
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Present Count</p>
+                <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{{ today_present }}</h3>
+                <span class="text-[11px] font-semibold text-slate-400">Marked Active</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+        </div>
+
+        <!-- Absent Today -->
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-bold uppercase tracking-wider text-rose-500">Absent Today</p>
+                <h3 class="text-2xl font-black text-rose-500 mt-1">{{ today_absent }}</h3>
+                <span class="text-[11px] font-semibold text-slate-400">Unrecorded / Off</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-user-xmark"></i>
+            </div>
+        </div>
+
+        <!-- Attendance Ratio -->
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Turnout Ratio</p>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                    {% if total_students > 0 %}
+                        {% widthratio today_present total_students 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h3>
+                <span class="text-[11px] font-semibold text-slate-400">Today's Class Turnout</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. Quick Execution Workspace Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Live Attendance Management Module -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between hover:border-brand-500/40 transition-colors">
+            <div class="space-y-3">
+                <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Dual Mode Attendance Hub</h3>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Capture instant class attendance using high-speed QR camera scanning for digital student ID passes, or switch directly to a manual roll list.
+                </p>
+            </div>
+            
+            <div class="pt-6 mt-6 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                <span class="text-xs text-slate-400 font-medium">QR Scanner + Manual Entry</span>
+                <a href="{% url 'class_attendance_dashboard' %}" class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white text-xs font-bold transition-all shadow-sm">
+                    <span>Open Attendance Terminal</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Analytics and Reports Module -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between hover:border-brand-500/40 transition-colors">
+            <div class="space-y-3">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-slate-700 text-amber-500 dark:text-amber-400 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-file-excel"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Monthly & Annual Analytics</h3>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Evaluate attendance distribution percentages, filter students falling below the mandatory 75% threshold, and export audit-ready CSV records.
+                </p>
+            </div>
+            
+            <div class="pt-6 mt-6 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                <span class="text-xs text-slate-400 font-medium">Detailed Analytics & CSV</span>
+                <a href="{% url 'monthly_yearly_report' %}?course={{ course }}&year={{ year }}&division={{ division }}" class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all">
+                    <span>View Class Reports</span>
+                    <i class="fa-solid fa-arrow-right text-[10px] text-slate-400"></i>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

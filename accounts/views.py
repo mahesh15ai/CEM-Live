@@ -88,3 +88,24 @@ def qr_login_view(request):
             return redirect('qr_login')
 
     return render(request, 'accounts/qr_login.html')
+
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def dashboard_redirect(request):
+    """
+    Directs the user to their designated portal based on their assigned role.
+    """
+    user = request.user
+    
+    if user.is_superuser or user.is_admin:
+        return redirect('manage_teachers')  # Or admin home / student_list
+    
+    if user.is_teacher:
+        return redirect('teacher_dashboard')
+    
+    if user.is_student:
+        return redirect('student_dashboard')
+        
+    return redirect('login')

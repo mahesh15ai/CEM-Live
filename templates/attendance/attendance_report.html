@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}Class Attendance Analytics | Vishwabharti CEM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="p-2 rounded-xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent">
+                    <i class="fa-solid fa-chart-pie text-xl"></i>
+                </span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight">Attendance Analytics & Report</h1>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center flex-wrap gap-2">
+                Class: <span class="px-2.5 py-0.5 rounded-lg bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent font-bold">{{ course }} - {{ year }} (Div {{ division }})</span>
+                <span>•</span>
+                <span>Session: <strong>{{ current_month }}/{{ current_year }}</strong></span>
+            </p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex items-center flex-wrap gap-2">
+            <a href="{% url 'export_attendance_csv' %}?course={{ course }}&year={{ year }}&division={{ division }}&report_month={{ current_month }}&report_year={{ current_year }}" class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all">
+                <i class="fa-solid fa-file-csv text-base"></i>
+                <span>Export CSV Report</span>
+            </a>
+            <a href="{% url 'class_attendance_dashboard' %}?course={{ course }}&year={{ year }}&division={{ division }}" class="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Attendance</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-extrabold tracking-wider uppercase text-slate-400 dark:text-slate-500">Working Days (Month)</p>
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">{{ total_month_days }} Days</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-calendar-day"></i>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-extrabold tracking-wider uppercase text-slate-400 dark:text-slate-500">Working Days (Year)</p>
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">{{ total_year_days }} Days</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-extrabold tracking-wider uppercase text-slate-400 dark:text-slate-500">Total Enrolled</p>
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">{{ report_data|length }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-emerald-200/80 dark:border-emerald-900/50 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-extrabold tracking-wider uppercase text-emerald-600 dark:text-emerald-400">Target Threshold</p>
+                <h3 class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">75% Min</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Control Card -->
+    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+            <input type="hidden" name="course" value="{{ course }}">
+            <input type="hidden" name="year" value="{{ year }}">
+            <input type="hidden" name="division" value="{{ division }}">
+
+            <div class="sm:col-span-5">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Select Month</label>
+                <select name="report_month" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold focus:ring-2 focus:ring-brand-600 outline-none">
+                    <option value="1" {% if current_month == 1 %}selected{% endif %}>January</option>
+                    <option value="2" {% if current_month == 2 %}selected{% endif %}>February</option>
+                    <option value="3" {% if current_month == 3 %}selected{% endif %}>March</option>
+                    <option value="4" {% if current_month == 4 %}selected{% endif %}>April</option>
+                    <option value="5" {% if current_month == 5 %}selected{% endif %}>May</option>
+                    <option value="6" {% if current_month == 6 %}selected{% endif %}>June</option>
+                    <option value="7" {% if current_month == 7 %}selected{% endif %}>July</option>
+                    <option value="8" {% if current_month == 8 %}selected{% endif %}>August</option>
+                    <option value="9" {% if current_month == 9 %}selected{% endif %}>September</option>
+                    <option value="10" {% if current_month == 10 %}selected{% endif %}>October</option>
+                    <option value="11" {% if current_month == 11 %}selected{% endif %}>November</option>
+                    <option value="12" {% if current_month == 12 %}selected{% endif %}>December</option>
+                </select>
+            </div>
+
+            <div class="sm:col-span-4">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Year</label>
+                <input type="number" name="report_year" value="{{ current_year }}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold focus:ring-2 focus:ring-brand-600 outline-none">
+            </div>
+
+            <div class="sm:col-span-3">
+                <button type="submit" class="w-full inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20 transition-all h-[42px]">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Apply Filter</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Analytics Report Table -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Student Attendance Performance
+            </h3>
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                Sorted by Roll No
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 uppercase text-[11px] font-extrabold tracking-wider border-b border-slate-200 dark:border-slate-700">
+                        <th class="py-3.5 px-4">Roll No</th>
+                        <th class="py-3.5 px-4">Student Name</th>
+                        <th class="py-3.5 px-4">Student ID</th>
+                        <th class="py-3.5 px-4 text-center">Month Attendance</th>
+                        <th class="py-3.5 px-4 text-center">Monthly %</th>
+                        <th class="py-3.5 px-4 text-center">Yearly %</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for row in report_data %}
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-700/30 transition-colors">
+                        <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">
+                            {{ row.student.roll_number|default:"-" }}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <div class="flex items-center space-x-3">
+                                {% if row.student.photo %}
+                                    <img src="{{ row.student.photo.url }}" class="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700">
+                                {% else %}
+                                    <span class="w-8 h-8 rounded-full bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent font-bold flex items-center justify-center text-xs">
+                                        {{ row.student.user.first_name|first|default:"S" }}
+                                    </span>
+                                {% endif %}
+                                <span class="font-bold text-slate-800 dark:text-slate-100">{{ row.student.user.get_full_name|default:row.student.user.username }}</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4 font-mono font-bold text-brand-600 dark:text-brand-accent">
+                            {{ row.student.student_id }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center font-semibold text-slate-600 dark:text-slate-300">
+                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-xs font-mono font-bold">
+                                {{ row.month_present }} / {{ total_month_days }} Days
+                            </span>
+                        </td>
+                        
+                        <!-- Monthly Percentage Badge -->
+                        <td class="py-3.5 px-4 text-center">
+                            {% if row.month_pct >= 75 %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                    {{ row.month_pct }}%
+                                </span>
+                            {% elif row.month_pct >= 60 %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                    {{ row.month_pct }}%
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                    {{ row.month_pct }}%
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Yearly Percentage Badge -->
+                        <td class="py-3.5 px-4 text-center">
+                            {% if row.year_pct >= 75 %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                    {{ row.year_pct }}%
+                                </span>
+                            {% elif row.year_pct >= 60 %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                    {{ row.year_pct }}%
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                    {{ row.year_pct }}%
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-10 text-slate-400 dark:text-slate-500">
+                            <i class="fa-solid fa-chart-simple text-3xl mb-2 block opacity-40"></i>
+                            No attendance records found for this class and timeframe.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

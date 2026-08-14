@@ -6,19 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vishwabharti Mahavidyalaya - Enterprise Portal</title>
     
-    <!-- 📌 Favicon Icon (Browser Tab Logo Fix) -->
+    <!-- 📌 Favicon Icon -->
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Theme Configuration Script (Light/Dark Mode Only) -->
+    <!-- Theme Configuration Script -->
     <script>
-        // 1. Get saved theme preference from LocalStorage (default 'light')
         const savedMode = localStorage.getItem('app_theme_mode') || 'light';
 
-        // 2. Configure Tailwind with Dark Mode support & Maroon Brand identity
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -41,7 +39,6 @@
             }
         };
 
-        // 3. Apply Dark/Light Class on Document Head immediately
         if (savedMode === 'dark') {
             document.documentElement.classList.add('dark');
             document.documentElement.classList.remove('light');
@@ -51,7 +48,7 @@
         }
     </script>
     
-    <!-- FontAwesome 6 Icons CDN -->
+    <!-- FontAwesome 6 Icons & Inter Font -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
@@ -91,54 +88,84 @@
             <!-- Navigation Links -->
             {% with current_url=request.resolver_match.url_name %}
             <nav class="p-3 space-y-1 text-sm font-medium">
-                {% if user.is_superuser or user.is_staff or user.is_admin %}
-                <!-- Admin Links -->
-                <a href="{% url 'student_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_list' or current_url == 'edit_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                
+                <!-- 1. ADMIN / SUPERUSER SECTION -->
+                {% if user.is_superuser or user.is_admin %}
+                <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Administration</div>
+
+                <a href="{% url 'student_list' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'student_list' or current_url == 'edit_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-user-graduate w-5 {% if current_url == 'student_list' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Students Directory</span>
                 </a>
 
-                <a href="{% url 'add_student' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'manage_teachers' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'manage_teachers' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-chalkboard-user w-5 {% if current_url == 'manage_teachers' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
+                    <span>Faculty Directory</span>
+                </a>
+
+                <a href="{% url 'add_student' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'add_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-user-plus w-5 {% if current_url == 'add_student' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Register Student</span>
                 </a>
 
-                <a href="{% url 'add_banner' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_banner' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'add_banner' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'add_banner' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-image w-5 {% if current_url == 'add_banner' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
-                    <span>+ Add Carousel Banner</span>
+                    <span>+ Carousel Banner</span>
                 </a>
 
-                <a href="{% url 'add_announcement' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'add_announcement' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'add_announcement' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'add_announcement' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-bullhorn w-5 {% if current_url == 'add_announcement' %}text-brand-600{% else %}text-emerald-400{% endif %}"></i>
                     <span>+ Post Announcement</span>
                 </a>
 
-                <a href="{% url 'scan_attendance' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'scan_attendance' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'scan_attendance' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'scan_attendance' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-qrcode w-5 {% if current_url == 'scan_attendance' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
-                    <span>Attendance Management</span>
+                    <span>Event Attendance</span>
                 </a>
-                {% else %}
-                <!-- Student Self-Service Links -->
-                {% if user.student_profile %}
-                <a href="{% url 'student_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+
+                <!-- 2. TEACHER / FACULTY SECTION -->
+                {% elif user.is_teacher or user.teacher_profile %}
+                <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Class Teacher Hub</div>
+
+                <a href="{% url 'teacher_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'teacher_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-gauge-high w-5 {% if current_url == 'teacher_dashboard' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
+                    <span>Teacher Dashboard</span>
+                </a>
+
+                <a href="{% url 'class_attendance_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'class_attendance_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-clipboard-user w-5 {% if current_url == 'class_attendance_dashboard' %}text-brand-600{% else %}text-emerald-400{% endif %}"></i>
+                    <span>Class Attendance</span>
+                </a>
+
+                <a href="{% url 'monthly_yearly_report' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'monthly_yearly_report' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-chart-pie w-5 {% if current_url == 'monthly_yearly_report' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
+                    <span>Attendance Analytics</span>
+                </a>
+
+                <!-- 3. STUDENT SELF-SERVICE SECTION -->
+                {% elif user.is_student or user.student_profile %}
+                <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Student Portal</div>
+
+                <a href="{% url 'student_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'student_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-house w-5 {% if current_url == 'student_dashboard' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Student Home</span>
                 </a>
 
-                <a href="{% url 'student_profile_view' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'student_profile_view' or current_url == 'edit_my_profile' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
-                    <i class="fa-solid fa-user-gear w-5 {% if current_url == 'student_profile_view' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
-                    <span>My Profile & Pass</span>
+                <a href="{% url 'student_profile_view' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'student_profile_view' or current_url == 'edit_my_profile' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-id-badge w-5 {% if current_url == 'student_profile_view' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
+                    <span>Digital Pass & ID</span>
                 </a>
                 {% endif %}
-                {% endif %}
 
-                <!-- Shared Links -->
-                <a href="{% url 'event_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'event_list' or current_url == 'create_event' or current_url == 'scan_event_pass' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <!-- 4. SHARED PORTAL MODULES -->
+                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Campus Modules</div>
+
+                <a href="{% url 'event_list' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'event_list' or current_url == 'create_event' or current_url == 'scan_event_pass' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-calendar-check w-5 {% if current_url == 'event_list' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Events & Expo</span>
                 </a>
 
-                <a href="{% url 'certificate_list' %}" class="flex items-center space-x-3 px-3.5 py-3 rounded-xl transition-all {% if current_url == 'certificate_list' or current_url == 'issue_certificate' or current_url == 'view_certificate' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                <a href="{% url 'certificate_list' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'certificate_list' or current_url == 'issue_certificate' or current_url == 'view_certificate' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-award w-5 {% if current_url == 'certificate_list' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Certificates</span>
                 </a>
@@ -146,7 +173,7 @@
             {% endwith %}
         </div>
 
-        <!-- User Logout -->
+        <!-- User Logout Footer -->
         <div class="p-3 border-t border-brand-600/60 bg-brand-800/30 sticky bottom-0">
             <a href="{% url 'logout' %}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-red-600/80 hover:text-white text-sm font-semibold transition-all">
                 <span class="flex items-center space-x-2">
@@ -158,7 +185,7 @@
         </div>
     </aside>
 
-    <!-- Overlay Backdrop -->
+    <!-- Overlay Backdrop for Mobile -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 hidden md:hidden"></div>
     {% endif %}
 
@@ -170,26 +197,34 @@
                 <h2 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">Welcome, <span class="text-brand-600 dark:text-brand-accent">{{ user.first_name|default:user.username }}</span></h2>
             </div>
             
-            <!-- Header Controls: Dark / Normal Mode Toggle Button -->
+            <!-- Header Controls: Dark Mode Toggle & Role Badge -->
             <div class="flex items-center space-x-2 sm:space-x-3">
-                
-                <!-- Dark Mode Toggle Button -->
                 <button onclick="toggleDarkMode()" class="p-2 px-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-all text-xs font-bold flex items-center space-x-2 border border-slate-200 dark:border-slate-600">
                     <i id="theme-toggle-icon" class="fa-solid fa-moon"></i>
                     <span id="theme-toggle-text">Dark</span>
                 </button>
 
-                <!-- User Role Badge -->
+                <!-- Dynamic User Role Badge -->
                 <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent border border-brand-100 dark:border-slate-600">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>{% if user.is_superuser or user.is_staff or user.is_admin %}Admin{% else %}Student{% endif %}</span>
+                    <span>
+                        {% if user.is_superuser or user.is_admin %}
+                            Admin
+                        {% elif user.is_teacher or user.teacher_profile %}
+                            Faculty / Teacher
+                        {% elif user.is_student or user.student_profile %}
+                            Student
+                        {% else %}
+                            User
+                        {% endif %}
+                    </span>
                 </span>
             </div>
         </header>
         {% endif %}
 
         <main class="p-4 sm:p-6 lg:p-8 flex-grow w-full max-w-7xl mx-auto">
-            <!-- Alert Messages Container with Smooth Fade-out Effect -->
+            <!-- Alert Messages Container -->
             {% if messages %}
                 <div id="django-messages" class="space-y-3 transition-opacity duration-500 ease-in-out mb-6">
                     {% for message in messages %}
@@ -207,20 +242,18 @@
 
     <!-- Theme System, Auto-hide Messages & Mobile Menu JavaScript -->
     <script>
-        // 1. Auto-hide Django Alert Messages after 3 seconds (3000ms)
         document.addEventListener('DOMContentLoaded', () => {
             const messagesContainer = document.getElementById('django-messages');
             if (messagesContainer) {
                 setTimeout(() => {
-                    messagesContainer.style.opacity = '0'; // Fade out
+                    messagesContainer.style.opacity = '0';
                     setTimeout(() => {
-                        messagesContainer.remove(); // Remove completely from DOM
+                        messagesContainer.remove();
                     }, 500); 
                 }, 3000); 
             }
         });
 
-        // 2. Toggle Dark / Light Mode
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('app_theme_mode', isDark ? 'dark' : 'light');
@@ -242,13 +275,11 @@
             }
         }
 
-        // 3. Initialize Theme State on DOM Load
         document.addEventListener('DOMContentLoaded', () => {
             const currentMode = localStorage.getItem('app_theme_mode') || 'light';
             updateThemeUI(currentMode === 'dark');
         });
 
-        // 4. Mobile Menu Toggle Logic
         const toggleBtn = document.getElementById('mobile-menu-toggle');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');

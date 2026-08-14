@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Faculty Management | Vishwabharti CEM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header & Action Button -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
+        <div>
+            <div class="flex items-center space-x-2">
+                <span class="p-2 rounded-xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent">
+                    <i class="fa-solid fa-chalkboard-user text-xl"></i>
+                </span>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight">Faculty & Teacher Directory</h1>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Register class teachers, allocate courses, and manage department access.</p>
+        </div>
+        <button onclick="openModal()" class="inline-flex items-center justify-center space-x-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-lg shadow-brand-600/20 hover:shadow-brand-600/40 transition-all">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Register New Teacher</span>
+        </button>
+    </div>
+
+    <!-- Teacher Directory Card -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+            <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">All Registered Faculty ({{ teachers|length }})</h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 uppercase text-[11px] font-extrabold tracking-wider border-b border-slate-200 dark:border-slate-700">
+                        <th class="py-3.5 px-4">Teacher ID</th>
+                        <th class="py-3.5 px-4">Faculty Name</th>
+                        <th class="py-3.5 px-4">Email (Username)</th>
+                        <th class="py-3.5 px-4">Assigned Class</th>
+                        <th class="py-3.5 px-4">Department</th>
+                        <th class="py-3.5 px-4">Phone</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                    {% for t in teachers %}
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-700/30 transition-colors">
+                        <td class="py-3.5 px-4 font-mono font-bold text-brand-600 dark:text-brand-accent">
+                            {{ t.teacher_id }}
+                        </td>
+                        <td class="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
+                            Prof. {{ t.user.get_full_name|default:t.user.username }}
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600 dark:text-slate-300">
+                            {{ t.user.email }}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                {{ t.assigned_course }} - {{ t.assigned_year }} (Div {{ t.assigned_division }})
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600 dark:text-slate-300">
+                            {{ t.department }}
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">
+                            {{ t.phone_number|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-10 text-slate-400 dark:text-slate-500">
+                            <i class="fa-solid fa-chalkboard-user text-3xl mb-2 block opacity-40"></i>
+                            No faculty members registered yet. Click "Register New Teacher" to allocate classes.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add New Teacher (Tailwind Modal) -->
+<div id="addTeacherModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform transition-all">
+        
+        <!-- Modal Header -->
+        <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+            <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100 flex items-center space-x-2">
+                <i class="fa-solid fa-user-plus text-brand-600 dark:text-brand-accent"></i>
+                <span>Register Class Teacher</span>
+            </h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Modal Form -->
+        <form method="POST" action="{% url 'manage_teachers' %}" class="p-6 space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">First Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="first_name" required placeholder="e.g. Rahul" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Last Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="last_name" required placeholder="e.g. Sharma" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Email (Login ID) <span class="text-rose-500">*</span></label>
+                    <input type="email" name="email" required placeholder="teacher@college.edu" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
+                    <input type="text" name="phone_number" placeholder="+91 9876543210" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                </div>
+
+                <!-- Class Allocation -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Assigned Course <span class="text-rose-500">*</span></label>
+                    <select name="assigned_course" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                        <option value="BCA">BCA</option>
+                        <option value="B.Sc CS">B.Sc CS</option>
+                        <option value="B.Sc IT">B.Sc IT</option>
+                        <option value="B.Com">B.Com</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Assigned Year <span class="text-rose-500">*</span></label>
+                    <select name="assigned_year" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                        <option value="First Year">First Year</option>
+                        <option value="Second Year">Second Year</option>
+                        <option value="Third Year">Third Year</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Division <span class="text-rose-500">*</span></label>
+                    <select name="assigned_division" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Department</label>
+                    <input type="text" name="department" value="Computer Science & IT" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Default Password <span class="text-rose-500">*</span></label>
+                    <input type="text" name="password" value="Teacher@123" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-brand-600 outline-none">
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end space-x-3">
+                <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-bold">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20">
+                    Register & Allocate Class
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Control Script -->
+<script>
+    function openModal() {
+        document.getElementById('addTeacherModal').classList.remove('hidden');
+    }
+    function closeModal() {
+        document.getElementById('addTeacherModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('addTeacherModal');
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}

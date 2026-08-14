@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pathlib import Path
 import dj_database_url
 import cloudinary
@@ -11,7 +12,7 @@ SECRET_KEY = 'django-insecure-vishwabharti-college-event-key'
 DEBUG = True
 ALLOWED_HOSTS = ['.vercel.app', '127.0.0.1', 'localhost', '*']
 
-# 📌 Installed Apps
+# Installed Apps
 INSTALLED_APPS = [
     # Standard Django Apps
     'django.contrib.admin',
@@ -20,7 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
 
-    # Static & Cloudinary Storage
+    # 📌 staticfiles la cloudinary_storage chya aadhi theva
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
     'events',
     'attendance',
     'certificates',
+    'teachers',
 ]
 
 # Middleware
@@ -69,7 +71,9 @@ TEMPLATES = [
 # Custom User Model Registration
 AUTH_USER_MODEL = 'accounts.User'
 
-# 📌 Supabase Database Connection
+# ------------------------------------------------------------------
+# 📌 Supabase Database Connection (With Maheshmahi150904)
+# ------------------------------------------------------------------
 DATABASE_URL = "postgresql://postgres.uzlhvmcghcdzeyxqqebs:Maheshmahi150904@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 
 DATABASES = {
@@ -100,13 +104,18 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # ------------------------------------------------------------------
-# 📌 Media & Temporary Storage Configuration (Fixes Vercel Errno 30)
+# 📌 Cross-Platform Media & Temp Directory (Windows + Vercel Fix)
 # ------------------------------------------------------------------
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/tmp'
-FILE_UPLOAD_TEMP_DIR = '/tmp'
+MEDIA_ROOT = os.path.join(tempfile.gettempdir(), 'media')
+FILE_UPLOAD_TEMP_DIR = tempfile.gettempdir()
 
-# Cloudinary Configuration
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(FILE_UPLOAD_TEMP_DIR, exist_ok=True)
+
+# ------------------------------------------------------------------
+# 📸 Cloudinary Permanent Storage Settings
+# ------------------------------------------------------------------
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'hhnkhoen',
     'API_KEY': '977119757646888',
@@ -136,7 +145,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication Redirects
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = 'dashboard_redirect'
 LOGOUT_REDIRECT_URL = 'login'
 
 # 📌 Email Configuration (Gmail SMTP)
