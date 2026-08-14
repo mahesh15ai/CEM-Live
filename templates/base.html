@@ -89,8 +89,8 @@
             {% with current_url=request.resolver_match.url_name %}
             <nav class="p-3 space-y-1 text-sm font-medium">
                 
-                <!-- 1. ADMIN / SUPERUSER SECTION -->
-                {% if user.is_superuser or user.is_admin %}
+                <!-- 1. ADMIN / SUPERUSER / STAFF SECTION -->
+                {% if user.is_superuser or user.is_staff or user.is_admin %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Administration</div>
 
                 <a href="{% url 'student_list' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'student_list' or current_url == 'edit_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
@@ -208,7 +208,7 @@
                 <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent border border-brand-100 dark:border-slate-600">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>
-                        {% if user.is_superuser or user.is_admin %}
+                        {% if user.is_superuser or user.is_staff or user.is_admin %}
                             Admin
                         {% elif user.is_teacher or user.teacher_profile %}
                             Faculty / Teacher
