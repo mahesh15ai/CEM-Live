@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import dj_database_url
+import cloudinary
 
 # Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,7 +11,7 @@ SECRET_KEY = 'django-insecure-vishwabharti-college-event-key'
 DEBUG = True
 ALLOWED_HOSTS = ['.vercel.app', '127.0.0.1', 'localhost', '*']
 
-# Installed Apps
+# 📌 Installed Apps
 INSTALLED_APPS = [
     # Standard Django Apps
     'django.contrib.admin',
@@ -19,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
 
-    # 📌 staticfiles ला staticfiles_build साठी cloudinary_storage च्या आधी ठेवा
+    # Static & Cloudinary Storage
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
@@ -99,31 +100,37 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # ------------------------------------------------------------------
-# 📌 Storage & Compatibility Settings (Fixes Whitenoise & Vercel Errors)
+# 📌 Media & Temporary Storage Configuration (Fixes Vercel Errno 30)
 # ------------------------------------------------------------------
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/tmp'  # Vercel Read-Only FileSystem Fix
+MEDIA_ROOT = '/tmp'
+FILE_UPLOAD_TEMP_DIR = '/tmp'
 
-# Django 5+ / 6+ STORAGES Dictionary
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        # 🚨 Missing admin SVG / CSS फाईल्समुळे बिल्ड क्रॅश होऊ नये म्हणून 'CompressedStaticFilesStorage' वापरले आहे
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
-
-# 🚨 Legacy Compatibility Settings
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
+# Cloudinary Configuration
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'hhnkhoen',
     'API_KEY': '977119757646888',
     'API_SECRET': 's-HAROLo9zUq1kvO_LOw57qZJdA'
 }
+
+cloudinary.config(
+    cloud_name='hhnkhoen',
+    api_key='977119757646888',
+    api_secret='s-HAROLo9zUq1kvO_LOw57qZJdA',
+    secure=True
+)
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

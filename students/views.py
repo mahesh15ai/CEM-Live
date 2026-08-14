@@ -85,9 +85,8 @@ def add_student(request):
         default_password = "Password@123"
 
         try:
-            # Wrap User + StudentProfile creation inside atomic transaction
             with transaction.atomic():
-                # 1. Auth User Create
+                # 1. Create Auth User
                 user = User.objects.create_user(
                     username=email,
                     email=email,
@@ -96,7 +95,7 @@ def add_student(request):
                     last_name=last_name
                 )
 
-                # 2. Student Profile Create
+                # 2. Create Student Profile
                 student = StudentProfile(
                     user=user,
                     department=department,
@@ -110,10 +109,9 @@ def add_student(request):
                 if photo:
                     student.photo = photo
 
-                # Save base profile to get student_id generated
                 student.save()
 
-                # 3. Base64 QR Code Generation (Zero local file write)
+                # 3. Base64 QR Code Generation (No local disk write)
                 try:
                     qr_text = f"STUDENT_PASS:{student.student_id}"
                     qr_img = qrcode.make(qr_text)
@@ -126,7 +124,7 @@ def add_student(request):
                 except Exception:
                     pass
 
-            # 4. Email Credentials Sending
+            # 4. Send Email Credentials
             subject = 'Welcome to Vishwabharti Mahavidyalaya - Student Credentials'
             email_content = f"""
 Dear {first_name} {last_name},
@@ -143,7 +141,7 @@ Course     : {course} ({year})
 ----------------------------------------
 
 Log in to your account here:
-https://cem-live-8hjp.vercel.app/accounts/login/
+https://cem-live-w7jl.vercel.app/accounts/login/
 
 Best Regards,
 Vishwabharti Mahavidyalaya, CIDCO, Nanded
