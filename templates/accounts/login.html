@@ -2,83 +2,156 @@
 {% load static %}
 
 {% block content %}
-<div class="max-w-md mx-auto my-8 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-    <!-- Header with Logo -->
-    <div class="bg-brand-600 p-6 text-center text-white">
-        <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center p-1.5 mx-auto mb-3 shadow-lg ring-2 ring-brand-accent/30">
-            <img src="{% static 'images/logo.png' %}" alt="College Logo" class="w-full h-full object-contain">
-        </div>
-        <h2 class="text-2xl font-black tracking-tight">Portal Login</h2>
-        <p class="text-brand-100 text-xs mt-1 font-medium">Vishwabharti College Event & Attendance System</p>
-    </div>
+<!-- Full viewport container: Centers everything horizontally & vertically -->
+<div class="w-full min-h-[calc(100vh-140px)] flex items-center justify-center py-6 px-4">
     
-    <div class="p-6 space-y-5">
-        <!-- Standard Username & Password Login Form -->
-        <form method="POST" class="space-y-4">
-            {% csrf_token %}
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Username / Student ID</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 text-sm">
-                        <i class="fa-solid fa-user"></i>
-                    </span>
-                    <input type="text" name="username" class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all" required placeholder="e.g. VBM20260001">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Password</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 text-sm">
-                        <i class="fa-solid fa-lock"></i>
-                    </span>
-                    <input type="password" id="password-input" name="password" class="w-full pl-10 pr-11 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all" required placeholder="••••••••">
+    <!-- Centered Parent Wrapper with explicit max-width and margin auto -->
+    <div class="w-full max-w-5xl mx-auto flex items-center justify-center">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center justify-center w-full">
+            
+            <!-- ================= LEFT PANEL: Highlights (PC Only) ================= -->
+            <div class="hidden lg:flex lg:col-span-7 flex-col justify-center space-y-5">
+                
+                <div class="space-y-2.5">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200 shadow-sm w-fit">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Vishwabharti Digital Campus Portal</span>
+                    </div>
                     
-                    <!-- Show/Hide Password Toggle Icon -->
-                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
-                        <i class="fa-solid fa-eye" id="password-icon"></i>
-                    </button>
+                    <h1 class="text-3xl xl:text-4xl font-black text-slate-900 leading-tight tracking-tight">
+                        Smart Campus, Attendance & <span class="text-brand-600">Event Portal</span>
+                    </h1>
+                    
+                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                        Official digital management platform for students & faculty at Vishwabharti Mahavidyalaya, CIDCO, Nanded. Access encrypted ID passes, real-time gathering attendance, and instant verified entries.
+                    </p>
+                </div>
+
+                <!-- 3 Stat Cards -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-1">
+                        <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                        <h3 class="text-xs font-black text-slate-900">Smart Pass</h3>
+                        <p class="text-[10px] text-slate-500">Encrypted QR tokens</p>
+                    </div>
+
+                    <div class="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-1">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <h3 class="text-xs font-black text-slate-900">Live Scanner</h3>
+                        <p class="text-[10px] text-slate-500">Instant kiosk check-in</p>
+                    </div>
+
+                    <div class="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-1">
+                        <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <h3 class="text-xs font-black text-slate-900">Annual Fest</h3>
+                        <p class="text-[10px] text-slate-500">Cultural & sports fest</p>
+                    </div>
+                </div>
+
+                <!-- Campus Security Strip -->
+                <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 text-white rounded-2xl p-3.5 shadow-md border border-slate-800 flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center flex-shrink-0 text-sm">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="space-y-0.5">
+                        <h4 class="text-xs font-bold text-slate-200">Authorized Campus Portal</h4>
+                        <p class="text-[10px] text-slate-400">Keep credentials secure. Use registered ID or QR Pass.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= RIGHT PANEL: Login Card ================= -->
+            <div class="lg:col-span-5 w-full flex justify-center lg:justify-end">
+                <div class="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200/80">
+                    
+                    <!-- Card Header -->
+                    <div class="bg-brand-600 px-6 py-4 sm:py-5 text-center text-white relative">
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-1.5 mx-auto mb-2 shadow-md ring-4 ring-white/20">
+                            <img src="{% static 'images/logo.png' %}" alt="College Logo" class="w-full h-full object-contain">
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-black tracking-tight">Portal Login</h2>
+                        <p class="text-brand-100 text-[11px] font-medium">Vishwabharti College Event System</p>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="p-5 sm:p-6 space-y-3.5">
+                        <form method="POST" class="space-y-3">
+                            {% csrf_token %}
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Username / Student ID</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">
+                                        <i class="fa-solid fa-user"></i>
+                                    </span>
+                                    <input type="text" name="username" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all shadow-sm" required placeholder="e.g. VBM20260001">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Password</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                    <input type="password" id="password-input" name="password" class="w-full pl-9 pr-10 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all shadow-sm" required placeholder="••••••••">
+                                    
+                                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                                        <i class="fa-solid fa-eye text-xs" id="password-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl transition shadow-md hover:shadow-lg flex items-center justify-center space-x-2 text-sm mt-1">
+                                <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+                                <span>Sign In</span>
+                            </button>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="relative flex py-0.5 items-center">
+                            <div class="flex-grow border-t border-slate-200"></div>
+                            <span class="flex-shrink mx-3 text-slate-400 text-[10px] font-bold uppercase tracking-wider">OR</span>
+                            <div class="flex-grow border-t border-slate-200"></div>
+                        </div>
+
+                        <!-- Scan QR Login Button -->
+                        <div>
+                            <a href="{% url 'qr_login' %}" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs">
+                                <i class="fa-solid fa-qrcode text-amber-400 text-sm"></i>
+                                <span>Scan ID Pass QR to Login</span>
+                            </a>
+                            <p class="text-[10px] text-center text-slate-400 font-medium mt-1.5">Hold your Student ID Pass in front of camera for instant access.</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center space-x-2 text-sm">
-                <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                <span>Sign In</span>
-            </button>
-        </form>
-
-        <!-- Divider -->
-        <div class="relative flex py-1 items-center">
-            <div class="flex-grow border-t border-slate-200"></div>
-            <span class="flex-shrink mx-4 text-slate-400 text-[11px] font-bold uppercase tracking-wider">OR</span>
-            <div class="flex-grow border-t border-slate-200"></div>
-        </div>
-
-        <!-- QR Code Instant Scanner Login Button -->
-        <div>
-            <a href="{% url 'qr_login' %}" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm">
-                <i class="fa-solid fa-qrcode text-amber-400 text-base"></i>
-                <span>Scan ID Pass QR to Login</span>
-            </a>
-            <p class="text-[10px] text-center text-slate-400 font-medium mt-2">Hold your Student ID Pass in front of camera for instant access.</p>
         </div>
     </div>
 </div>
 
-<!-- JavaScript to Toggle Password Visibility -->
+<!-- Password Toggle Script -->
 <script>
     const togglePassword = document.getElementById('toggle-password');
     const passwordInput = document.getElementById('password-input');
     const passwordIcon = document.getElementById('password-icon');
 
-    togglePassword.addEventListener('click', function () {
-        // Toggle type attribute
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        
-        // Toggle the eye / eye-slash icon
-        passwordIcon.classList.toggle('fa-eye');
-        passwordIcon.classList.toggle('fa-eye-slash');
-    });
+    if (togglePassword && passwordInput && passwordIcon) {
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            passwordIcon.classList.toggle('fa-eye');
+            passwordIcon.classList.toggle('fa-eye-slash');
+        });
+    }
 </script>
 {% endblock %}
