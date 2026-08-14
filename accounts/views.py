@@ -1,31 +1,43 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from accounts.models import User
 from students.models import StudentProfile
+from teachers.models import TeacherProfile
+
 
 def login_view(request):
     # जर आधीच लॉगिन असेल तर रोलनुसार योग्य पानावर पाठवा
     if request.user.is_authenticated:
-        if request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False):
+        if getattr(request.user, 'is_teacher', False) or hasattr(request.user, 'teacher_profile'):
+            return redirect('teacher_dashboard')
+        elif request.user.is_superuser or request.user.is_staff or getattr(request.user, 'is_admin', False):
             return redirect('student_list')
-        return redirect('student_dashboard')
+        elif getattr(request.user, 'is_student', False) or hasattr(request.user, 'student_profile'):
+            return redirect('student_dashboard')
+        return redirect('student_list')
 
     if request.method == 'POST':
         input_identifier = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
 
         target_username = input_identifier
-        
-        # 1. Student ID जुळतोय का ते तपासा
+
+        # 1. Student ID जुळतोय का ते तपासा (उदा. VBM20260001)
         student_profile = StudentProfile.objects.filter(student_id__iexact=input_identifier).select_related('user').first()
         if student_profile and student_profile.user:
             target_username = student_profile.user.username
         else:
-            # 2. Email ID जुळतोय का ते तपासा
-            user_by_email = User.objects.filter(email__iexact=input_identifier).first()
-            if user_by_email:
-                target_username = user_by_email.username
+            # 2. Teacher ID जुळतोय का ते तपासा (उदा. VBM-T-001)
+            teacher_profile = TeacherProfile.objects.filter(teacher_id__iexact=input_identifier).select_related('user').first()
+            if teacher_profile and teacher_profile.user:
+                target_username = teacher_profile.user.username
+            else:
+                # 3. Email ID जुळतोय का ते तपासा
+                user_by_email = User.objects.filter(email__iexact=input_identifier).first()
+                if user_by_email:
+                    target_username = user_by_email.username
 
         # Authenticate User
         user = authenticate(request, username=target_username, password=password)
@@ -34,16 +46,26 @@ def login_view(request):
             if user.is_active:
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+
+                # 📌 Role-Based Clean Redirect (Priority-wise):
                 
-                # Role-Based Clean Redirect
-                if user.is_superuser or user.is_staff or getattr(user, 'is_admin', False):
+                # १. जर Teacher असेल तर Teacher Dashboard वर पाठवा
+                if getattr(user, 'is_teacher', False) or hasattr(user, 'teacher_profile'):
+                    return redirect('teacher_dashboard')
+                
+                # २. जर Superuser / Admin असेल तर Student List वर पाठवा
+                elif user.is_superuser or user.is_staff or getattr(user, 'is_admin', False):
                     return redirect('student_list')
-                else:
+                
+                # ३. जर Student असेल तर Student Dashboard वर पाठवा
+                elif getattr(user, 'is_student', False) or hasattr(user, 'student_profile'):
                     return redirect('student_dashboard')
+                
+                return redirect('student_list')
             else:
                 messages.error(request, "This account has been disabled.")
         else:
-            messages.error(request, "Invalid username/Student ID or password.")
+            messages.error(request, "Invalid username, Email, ID or password.")
 
     return render(request, 'accounts/login.html')
 
@@ -58,39 +80,24 @@ def qr_login_view(request):
     if request.method == 'POST':
         qr_data = request.POST.get('qr_data', '').strip()
         
-        # 📌 DEBUG LOGGING FOR TERMINAL
-        print("\n" + "="*50)
-        print(f"[DEBUG QR SCAN] RAW QR DATA RECEIVED: '{qr_data}'")
-        
-        # Clean QR prefixes: "STUDENT_PASS:VBM20260001", "STUDENT:VBM20260001", or raw "VBM20260001"
+        # Clean QR prefixes
         student_id = qr_data.replace('STUDENT_PASS:', '').replace('STUDENT:', '').strip()
-        print(f"[DEBUG QR SCAN] CLEANED STUDENT ID: '{student_id}'")
 
         student = StudentProfile.objects.filter(student_id__iexact=student_id).select_related('user').first()
 
         if student and student.user:
             user = student.user
-            
-            # Set authentication backend manually (since password authentication was skipped)
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             
             login(request, user)
-            print(f"[DEBUG QR SCAN] SUCCESS: Logged in user '{user.username}' (Student ID: {student.student_id})")
-            print("="*50 + "\n")
-            
             messages.success(request, f"🎉 Welcome back, {user.first_name or user.username}! Logged in via Identity QR.")
             return redirect('student_dashboard')
         else:
-            print(f"[DEBUG QR SCAN] FAILED: StudentProfile matching ID '{student_id}' NOT FOUND in Database.")
-            print("="*50 + "\n")
-            
             messages.error(request, f"❌ Invalid QR Pass. Scanned ID '{student_id}' does not match any student record.")
             return redirect('qr_login')
 
     return render(request, 'accounts/qr_login.html')
 
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def dashboard_redirect(request):
@@ -99,13 +106,13 @@ def dashboard_redirect(request):
     """
     user = request.user
     
-    if user.is_superuser or user.is_admin:
-        return redirect('manage_teachers')  # Or admin home / student_list
-    
-    if user.is_teacher:
+    if getattr(user, 'is_teacher', False) or hasattr(user, 'teacher_profile'):
         return redirect('teacher_dashboard')
+        
+    if user.is_superuser or user.is_staff or getattr(user, 'is_admin', False):
+        return redirect('student_list')
     
-    if user.is_student:
+    if getattr(user, 'is_student', False) or hasattr(user, 'student_profile'):
         return redirect('student_dashboard')
         
     return redirect('login')
