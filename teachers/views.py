@@ -3,8 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
-from django.core.mail import send_mail
-from django.conf import settings
 
 from accounts.models import User
 from students.models import StudentProfile
@@ -17,6 +15,7 @@ from .models import TeacherProfile
 # ----------------------------------------------------
 @login_required
 def manage_teachers(request):
+    # फक्त Admin किंवा Superuser लाच प्रवेश
     if not (request.user.is_superuser or getattr(request.user, 'is_admin', False)):
         messages.error(request, "Access denied. Admin privileges required.")
         return redirect('dashboard_redirect')
@@ -33,12 +32,13 @@ def manage_teachers(request):
         assigned_division = request.POST.get('assigned_division', 'A').strip()
         raw_password = request.POST.get('password', 'Teacher@123').strip()
 
-        if User.objects.filter(username=email).exists():
+        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
             messages.error(request, f"User with email '{email}' already exists.")
             return redirect('manage_teachers')
 
         try:
             with transaction.atomic():
+                # 📌 फिक्स: is_staff=False ठेवा जेणेकरून शिक्षक Admin होणार नाही
                 user = User.objects.create_user(
                     username=email,
                     email=email,
@@ -46,7 +46,8 @@ def manage_teachers(request):
                     first_name=first_name,
                     last_name=last_name,
                     is_teacher=True,
-                    is_staff=True,
+                    is_staff=False,       # 👈 Staff/Admin Permission काढली
+                    is_admin=False,
                     phone=phone_number
                 )
 
@@ -80,26 +81,31 @@ def manage_teachers(request):
 @login_required
 def teacher_dashboard(request):
     teacher = getattr(request.user, 'teacher_profile', None)
-    if not (teacher or request.user.is_superuser or request.user.is_admin):
+    if not (teacher or request.user.is_superuser or getattr(request.user, 'is_admin', False)):
         messages.error(request, "Access restricted to Class Teachers.")
         return redirect('student_dashboard')
 
     today = timezone.now().date()
-    course = teacher.assigned_course if teacher else 'BCA'
-    year = teacher.assigned_year if teacher else 'Third Year'
-    division = teacher.assigned_division if teacher else 'A'
+    course = teacher.assigned_course if teacher and teacher.assigned_course else 'BCA'
+    year = teacher.assigned_year if teacher and teacher.assigned_year else 'First Year'
+    division = teacher.assigned_division if teacher and teacher.assigned_division else 'A'
 
-    total_students = StudentProfile.objects.filter(course=course, year=year, division=division).count()
+    students = StudentProfile.objects.filter(course=course, year=year, division=division)
+    total_students = students.count()
     
-    today_present = DailyClassAttendance.objects.filter(
-        student__course=course, student__year=year, student__division=division,
-        date=today, status='Present'
-    ).count()
-
-    today_marked = DailyClassAttendance.objects.filter(
+    today_records = DailyClassAttendance.objects.filter(
         student__course=course, student__year=year, student__division=division,
         date=today
-    ).exists()
+    )
+    
+    today_marked = today_records.exists()
+    today_present = today_records.filter(status='Present').count()
+
+    # 📌 फिक्स: आजचे Absent अचूक दाखवा
+    if today_marked:
+        today_absent = today_records.filter(status='Absent').count()
+    else:
+        today_absent = max(0, total_students - today_present)
 
     context = {
         'teacher': teacher,
@@ -108,7 +114,7 @@ def teacher_dashboard(request):
         'division': division,
         'total_students': total_students,
         'today_present': today_present,
-        'today_absent': (total_students - today_present) if today_marked else 0,
+        'today_absent': today_absent,
         'today_marked': today_marked,
         'today': today,
     }

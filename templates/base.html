@@ -89,8 +89,27 @@
             {% with current_url=request.resolver_match.url_name %}
             <nav class="p-3 space-y-1 text-sm font-medium">
                 
-                <!-- 1. ADMIN / SUPERUSER / STAFF SECTION -->
-                {% if user.is_superuser or user.is_staff or user.is_admin %}
+                <!-- 1. TEACHER / FACULTY SECTION (Priority 1) -->
+                {% if user.is_teacher or user.teacher_profile %}
+                <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Class Teacher Hub</div>
+
+                <a href="{% url 'teacher_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'teacher_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-gauge-high w-5 {% if current_url == 'teacher_dashboard' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
+                    <span>Teacher Dashboard</span>
+                </a>
+
+                <a href="{% url 'class_attendance_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'class_attendance_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-clipboard-user w-5 {% if current_url == 'class_attendance_dashboard' %}text-brand-600{% else %}text-emerald-400{% endif %}"></i>
+                    <span>Class Attendance</span>
+                </a>
+
+                <a href="{% url 'monthly_yearly_report' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'monthly_yearly_report' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-chart-pie w-5 {% if current_url == 'monthly_yearly_report' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
+                    <span>Attendance Analytics</span>
+                </a>
+
+                <!-- 2. ADMIN / SUPERUSER / STAFF SECTION (Priority 2) -->
+                {% elif user.is_superuser or user.is_staff or user.is_admin %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Administration</div>
 
                 <a href="{% url 'student_list' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'student_list' or current_url == 'edit_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
@@ -123,26 +142,7 @@
                     <span>Event Attendance</span>
                 </a>
 
-                <!-- 2. TEACHER / FACULTY SECTION -->
-                {% elif user.is_teacher or user.teacher_profile %}
-                <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Class Teacher Hub</div>
-
-                <a href="{% url 'teacher_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'teacher_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
-                    <i class="fa-solid fa-gauge-high w-5 {% if current_url == 'teacher_dashboard' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
-                    <span>Teacher Dashboard</span>
-                </a>
-
-                <a href="{% url 'class_attendance_dashboard' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'class_attendance_dashboard' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
-                    <i class="fa-solid fa-clipboard-user w-5 {% if current_url == 'class_attendance_dashboard' %}text-brand-600{% else %}text-emerald-400{% endif %}"></i>
-                    <span>Class Attendance</span>
-                </a>
-
-                <a href="{% url 'monthly_yearly_report' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'monthly_yearly_report' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
-                    <i class="fa-solid fa-chart-pie w-5 {% if current_url == 'monthly_yearly_report' %}text-brand-600{% else %}text-amber-300{% endif %}"></i>
-                    <span>Attendance Analytics</span>
-                </a>
-
-                <!-- 3. STUDENT SELF-SERVICE SECTION -->
+                <!-- 3. STUDENT SELF-SERVICE SECTION (Priority 3) -->
                 {% elif user.is_student or user.student_profile %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Student Portal</div>
 
@@ -204,14 +204,14 @@
                     <span id="theme-toggle-text">Dark</span>
                 </button>
 
-                <!-- Dynamic User Role Badge -->
+                <!-- Dynamic User Role Badge (Priority-Ordered) -->
                 <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent border border-brand-100 dark:border-slate-600">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>
-                        {% if user.is_superuser or user.is_staff or user.is_admin %}
-                            Admin
-                        {% elif user.is_teacher or user.teacher_profile %}
+                        {% if user.is_teacher or user.teacher_profile %}
                             Faculty / Teacher
+                        {% elif user.is_superuser or user.is_staff or user.is_admin %}
+                            Admin
                         {% elif user.is_student or user.student_profile %}
                             Student
                         {% else %}
@@ -240,7 +240,7 @@
         </main>
     </div>
 
-    <!-- Theme System, Auto-hide Messages & Mobile Menu JavaScript -->
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const messagesContainer = document.getElementById('django-messages');
