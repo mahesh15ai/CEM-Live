@@ -14,7 +14,7 @@ from .models import AttendanceRecord, DailyClassAttendance
 
 
 # ----------------------------------------------------
-# 📌 १. Event Scanner View
+# 📌 १. Event Scanner View (Single Scan per Day)
 # ----------------------------------------------------
 @login_required
 def scan_attendance(request):
@@ -25,25 +25,32 @@ def scan_attendance(request):
 
     if request.method == 'POST':
         qr_code_data = request.POST.get('qr_code_data', '').strip()
-        student_id = qr_code_data.replace("STUDENT_PASS:", "").strip()
+        student_id = qr_code_data.replace("STUDENT_PASS:", "").replace("STUDENT:", "").strip()
 
-        student = StudentProfile.objects.filter(student_id=student_id).first()
+        student = StudentProfile.objects.filter(student_id__iexact=student_id).select_related('user').first()
         if not student:
             return JsonResponse({'status': 'error', 'message': f'Student ID {student_id} not found.'}, status=404)
 
         today = timezone.now().date()
-        record, created = AttendanceRecord.objects.get_or_create(
+        
+        # आधीच हजेरी लागली आहे का ते तपासा
+        existing_record = AttendanceRecord.objects.filter(student=student, date=today).first()
+        if existing_record:
+            return JsonResponse({
+                'status': 'warning',
+                'message': f"⚠️ Attendance already marked for {student.user.get_full_name()} today."
+            })
+
+        AttendanceRecord.objects.create(
             student=student,
             date=today,
-            defaults={'status': 'Present', 'marked_by': request.user.get_full_name() or request.user.username}
+            status='Present',
+            marked_by=request.user.get_full_name() or request.user.username
         )
-
-        if not created:
-            return JsonResponse({'status': 'warning', 'message': f'Attendance already marked for {student.user.get_full_name()} today.'})
 
         return JsonResponse({
             'status': 'success',
-            'message': f'Attendance recorded: {student.user.get_full_name()} ({student.student_id})'
+            'message': f"✅ Attendance recorded: {student.user.get_full_name()} ({student.student_id})"
         })
 
     today_records = AttendanceRecord.objects.filter(date=timezone.now().date()).select_related('student__user')
@@ -65,7 +72,7 @@ def class_attendance_dashboard(request):
     today = timezone.now().date()
     
     course = teacher.assigned_course if teacher and teacher.assigned_course else request.GET.get('course', 'BCA')
-    year = teacher.assigned_year if teacher and teacher.assigned_year else request.GET.get('year', 'Third Year')
+    year = teacher.assigned_year if teacher and teacher.assigned_year else request.GET.get('year', 'First Year')
     division = teacher.assigned_division if teacher and teacher.assigned_division else request.GET.get('division', 'A')
 
     students = StudentProfile.objects.filter(
@@ -123,45 +130,65 @@ def submit_manual_attendance(request):
 
 
 # ----------------------------------------------------
-# 📌 ४. Live Class QR Scanner API Endpoint
+# 📌 ४. Live Class QR Scanner API (Only One Scan Per Day)
 # ----------------------------------------------------
 @csrf_exempt
 @login_required
 def scan_qr_attendance(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            qr_content = data.get('qr_content', '').strip()
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
 
-            student_id = qr_content.replace("STUDENT_PASS:", "").strip()
+    try:
+        data = json.loads(request.body)
+        qr_content = data.get('qr_content', '').strip()
 
-            student = StudentProfile.objects.filter(student_id=student_id).first()
-            if not student:
-                return JsonResponse({'status': 'error', 'message': f'Student ID {student_id} not found.'}, status=404)
+        if not qr_content:
+            return JsonResponse({'status': 'error', 'message': 'Empty QR content received.'}, status=400)
 
-            today = timezone.now().date()
-            record, created = DailyClassAttendance.objects.update_or_create(
-                student=student,
-                date=today,
-                defaults={
-                    'status': 'Present',
-                    'marked_by': request.user,
-                    'method': 'QR_SCAN',
-                }
-            )
+        student_id = qr_content.replace("STUDENT_PASS:", "").replace("STUDENT:", "").strip()
 
+        student = StudentProfile.objects.filter(student_id__iexact=student_id).select_related('user').first()
+        if not student:
+            return JsonResponse({'status': 'error', 'message': f"Student ID '{student_id}' not found."}, status=404)
+
+        today = timezone.now().date()
+        current_time_str = timezone.localtime().strftime("%I:%M %p")
+
+        # ----------------------------------------------------
+        # 📌 डुप्लिकेट स्कॅन तपासणी (Duplicate Check for Today)
+        # ----------------------------------------------------
+        existing_record = DailyClassAttendance.objects.filter(
+            student=student,
+            date=today
+        ).first()
+
+        if existing_record and existing_record.status == 'Present':
             return JsonResponse({
-                'status': 'success',
-                'message': f"Marked Present: {student.user.get_full_name()} (Roll No: {student.roll_number})",
-                'student_name': student.user.get_full_name(),
-                'student_id': student.student_id,
-                'time': timezone.now().strftime("%I:%M %p")
+                'status': 'error',
+                'message': f"⚠️ {student.user.get_full_name()} ({student.student_id}) is ALREADY marked Present today!"
             })
 
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+        # नवीन हजेरी नोंदवा किंवा जर आधी Absent असेल तर Present करा
+        DailyClassAttendance.objects.update_or_create(
+            student=student,
+            date=today,
+            defaults={
+                'status': 'Present',
+                'marked_by': request.user,
+                'method': 'QR_SCAN',
+            }
+        )
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+        return JsonResponse({
+            'status': 'success',
+            'message': f"Marked Present: {student.user.get_full_name()} (Roll No: {student.roll_number or '-'})",
+            'student_name': student.user.get_full_name() or student.user.username,
+            'student_id': student.student_id,
+            'time': current_time_str
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f"Error: {str(e)}"}, status=400)
 
 
 # ----------------------------------------------------
@@ -171,7 +198,7 @@ def scan_qr_attendance(request):
 def monthly_yearly_report(request):
     teacher = getattr(request.user, 'teacher_profile', None)
     course = teacher.assigned_course if teacher and teacher.assigned_course else request.GET.get('course', 'BCA')
-    year = teacher.assigned_year if teacher and teacher.assigned_year else request.GET.get('year', 'Third Year')
+    year = teacher.assigned_year if teacher and teacher.assigned_year else request.GET.get('year', 'First Year')
     division = teacher.assigned_division if teacher and teacher.assigned_division else request.GET.get('division', 'A')
 
     current_year = int(request.GET.get('report_year', timezone.now().year))
@@ -228,7 +255,7 @@ def monthly_yearly_report(request):
 @login_required
 def export_attendance_csv(request):
     course = request.GET.get('course', 'BCA')
-    year = request.GET.get('year', 'Third Year')
+    year = request.GET.get('year', 'First Year')
     division = request.GET.get('division', 'A')
     current_year = int(request.GET.get('report_year', timezone.now().year))
     current_month = int(request.GET.get('report_month', timezone.now().month))

@@ -47,6 +47,7 @@ class DailyClassAttendance(models.Model):
     marked_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        ordering = ['-date', '-marked_at']  # 👈 नवीन नोंदी वर दिसण्यासाठी
         unique_together = ('student', 'date')
 
     def __str__(self):
