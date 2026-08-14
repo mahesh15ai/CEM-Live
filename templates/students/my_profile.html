@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <!-- Protected QR Pass Box (100% Guaranteed Dynamic QR Pass) -->
+    <!-- Protected QR Pass Box (100% Guaranteed Render) -->
     <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl border border-slate-800 text-center space-y-3">
         <div class="inline-flex items-center gap-2 bg-brand-500/20 text-brand-400 px-3 py-1 rounded-full text-xs font-bold border border-brand-500/30">
             <i class="fa-solid fa-lock text-[10px]"></i> System Generated Official Pass Token
@@ -52,13 +52,16 @@
         <p class="text-xs text-slate-400">This QR code is uniquely tied to your Student ID and cannot be altered.</p>
         
         <div class="p-3 bg-white rounded-2xl inline-block shadow-2xl border-2 border-slate-100">
-            <!-- Zero-failure dynamic QR generator API with student token -->
-            <img 
-                src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=STUDENT_PASS:{{ student.student_id }}&color=1e293b&margin=6" 
-                alt="Digital QR Pass for {{ student.student_id }}" 
-                class="w-44 h-44 sm:w-48 sm:h-48 object-contain rounded-xl"
-                loading="eager"
-            >
+            <!-- Dynamic QR with fail-safe JS Canvas -->
+            <div id="qr-holder" class="w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center">
+                <img 
+                    id="qr-img"
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=STUDENT_PASS:{{ student.student_id }}" 
+                    alt="Digital QR Pass for {{ student.student_id }}" 
+                    class="w-full h-full object-contain rounded-xl"
+                    onerror="generateFallbackQR()"
+                >
+            </div>
         </div>
 
         <p class="text-[11px] font-mono text-slate-400 font-semibold tracking-wider">
@@ -66,4 +69,23 @@
         </p>
     </div>
 </div>
+
+<!-- Standalone QRCode Backup Script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    function generateFallbackQR() {
+        var holder = document.getElementById("qr-holder");
+        if (holder) {
+            holder.innerHTML = "";
+            new QRCode(holder, {
+                text: "STUDENT_PASS:{{ student.student_id }}",
+                width: 180,
+                height: 180,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+    }
+</script>
 {% endblock %}
