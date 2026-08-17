@@ -1,4 +1,4 @@
-﻿asgiref==3.12.1
+asgiref==3.12.1
 certifi==2026.7.22
 charset-normalizer==3.4.9
 cloudinary==1.45.0
