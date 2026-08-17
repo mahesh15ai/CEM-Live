@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify Certificate - {{ cert.certificate_id }} | Vishwabharti Mahavidyalaya{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden relative">
+        
+        <!-- Top Verified Banner -->
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-8 text-center text-white relative">
+            <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-3 border border-white/30 shadow-inner">
+                <i class="fa-solid fa-circle-check text-3xl text-emerald-300"></i>
+            </div>
+            <span class="inline-block px-3 py-1 bg-emerald-500/40 text-emerald-100 text-xs font-semibold rounded-full uppercase tracking-wider mb-1">
+                Authentic & Verified
+            </span>
+            <h1 class="text-2xl font-black tracking-tight">Official Certificate Record</h1>
+            <p class="text-emerald-100 text-xs mt-1">Issued by Vishwabharti Mahavidyalaya, CIDCO, Nanded</p>
+        </div>
+
+        <!-- Certificate Details -->
+        <div class="p-6 sm:p-8 space-y-6">
+            
+            <!-- Student Header Badge -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div class="w-14 h-14 rounded-2xl bg-brand-900 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                    {{ cert.student.user.first_name|first }}{{ cert.student.user.last_name|first }}
+                </div>
+                <div class="text-center sm:text-left flex-1">
+                    <h2 class="text-lg font-bold text-slate-900">{{ cert.student.user.get_full_name }}</h2>
+                    <p class="text-xs text-slate-500 font-medium">Student ID: <span class="text-slate-800 font-bold">{{ cert.student.student_id }}</span></p>
+                    <p class="text-xs text-slate-500 font-medium">{{ cert.student.course }} &bull; {{ cert.student.year }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="px-3 py-1 bg-brand-50 text-brand-900 text-xs font-bold rounded-lg border border-brand-200">
+                        {{ cert.certificate_type }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Meta Information Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-4 rounded-2xl border border-slate-100 bg-white">
+                    <span class="text-[11px] uppercase font-bold text-slate-400 block tracking-wider mb-0.5">Certificate ID</span>
+                    <span class="text-sm font-bold text-slate-800 font-mono select-all">{{ cert.certificate_id }}</span>
+                </div>
+                <div class="p-4 rounded-2xl border border-slate-100 bg-white">
+                    <span class="text-[11px] uppercase font-bold text-slate-400 block tracking-wider mb-0.5">Issue Date</span>
+                    <span class="text-sm font-bold text-slate-800">{{ cert.issue_date|date:"F d, Y"|default:"Official" }}</span>
+                </div>
+            </div>
+
+            <!-- Achievement Description -->
+            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
+                <span class="text-[11px] uppercase font-bold text-slate-400 block tracking-wider mb-1">Event / Achievement</span>
+                <p class="text-sm font-bold text-slate-800">{{ cert.title }}</p>
+                {% if cert.description %}
+                    <p class="text-xs text-slate-600 mt-1 leading-relaxed">{{ cert.description }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                <a href="{% url 'download_certificate_pdf' cert.certificate_id %}" 
+                   class="flex-1 inline-flex items-center justify-center px-4 py-3 bg-brand-900 hover:bg-brand-950 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                    <i class="fa-solid fa-file-pdf mr-2 text-rose-300"></i> Download Official PDF
+                </a>
+                <a href="{% url 'login' %}" 
+                   class="inline-flex items-center justify-center px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition">
+                    <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i> Portal Login
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Verified Footer -->
+        <div class="bg-slate-50 border-t border-slate-100 px-6 py-3.5 text-center">
+            <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-emerald-500"></i> Digital Certificate Secured & Authenticated by Vishwabharti Portal
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

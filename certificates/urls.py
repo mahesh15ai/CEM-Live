@@ -5,4 +5,6 @@ urlpatterns = [
     path('', views.certificate_list, name='certificate_list'),
     path('issue/', views.issue_certificate, name='issue_certificate'),
     path('view/<str:certificate_id>/', views.view_certificate, name='view_certificate'),
+    path('download/<str:certificate_id>/', views.download_certificate_pdf, name='download_certificate_pdf'),
+    path('verify/<str:certificate_id>/', views.verify_certificate, name='verify_certificate'),
 ]

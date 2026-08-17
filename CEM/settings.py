@@ -1,15 +1,17 @@
 import os
-import tempfile
 from pathlib import Path
-import dj_database_url
+import tempfile
 import cloudinary
+import dj_database_url
 
 # Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security Settings
-SECRET_KEY = 'django-insecure-vishwabharti-college-event-key'
-DEBUG = True
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY', 'django-insecure-vishwabharti-college-event-key'
+)
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['.vercel.app', '127.0.0.1', 'localhost', '*']
 
 # Installed Apps
@@ -20,12 +22,10 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-
-    # 📌 staticfiles la cloudinary_storage chya aadhi theva
+    # 📌 Staticfiles placed before Cloudinary
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
-
     # Vishwabharti CEM Apps
     'accounts',
     'students',
@@ -50,7 +50,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'CEM.urls'
 WSGI_APPLICATION = 'CEM.wsgi.application'
 
-# HTML Templates Config
+# 📌 Optimized HTML Templates Config
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -72,24 +72,41 @@ TEMPLATES = [
 AUTH_USER_MODEL = 'accounts.User'
 
 # ------------------------------------------------------------------
-# 📌 Supabase Database Connection (With Maheshmahi150904)
+# 📌 Supabase Database Connection with Optimized Connection Pooling
 # ------------------------------------------------------------------
-DATABASE_URL = "postgresql://postgres.uzlhvmcghcdzeyxqqebs:Maheshmahi150904@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+DEFAULT_DATABASE_URL = 'postgresql://postgres.uzlhvmcghcdzeyxqqebs:Maheshmahi150904@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres'
+DATABASE_URL = os.environ.get('DATABASE_URL', DEFAULT_DATABASE_URL)
 
 DATABASES = {
     'default': dj_database_url.config(
         default=DATABASE_URL,
-        conn_max_age=0,
-        ssl_require=True
+        conn_max_age=60,  # ⚡ Keeps DB connection alive across serverless hits
+        ssl_require=True,
     )
 }
 
 # Password Validation
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {
+        'NAME': (
+            'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+        )
+    },
+    {
+        'NAME': (
+            'django.contrib.auth.password_validation.MinimumLengthValidator'
+        )
+    },
+    {
+        'NAME': (
+            'django.contrib.auth.password_validation.CommonPasswordValidator'
+        )
+    },
+    {
+        'NAME': (
+            'django.contrib.auth.password_validation.NumericPasswordValidator'
+        )
+    },
 ]
 
 # Time Zone for India
@@ -114,32 +131,34 @@ os.makedirs(MEDIA_ROOT, exist_ok=True)
 os.makedirs(FILE_UPLOAD_TEMP_DIR, exist_ok=True)
 
 # ------------------------------------------------------------------
-# 📸 Cloudinary Permanent Storage Settings
+# 📸 Cloudinary Storage Settings
 # ------------------------------------------------------------------
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'hhnkhoen',
-    'API_KEY': '977119757646888',
-    'API_SECRET': 's-HAROLo9zUq1kvO_LOw57qZJdA'
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'hhnkhoen'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '977119757646888'),
+    'API_SECRET': os.environ.get(
+        'CLOUDINARY_API_SECRET', 's-HAROLo9zUq1kvO_LOw57qZJdA'
+    ),
 }
 
 cloudinary.config(
-    cloud_name='hhnkhoen',
-    api_key='977119757646888',
-    api_secret='s-HAROLo9zUq1kvO_LOw57qZJdA',
-    secure=True
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+    secure=True,
 )
 
+# ⚡ Compressed Static Files & Cloudinary Media Backend
 STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
     },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    'staticfiles': {
+        'BACKEND': (
+            'whitenoise.storage.CompressedManifestStaticFilesStorage'
+        ),  # ⚡ Fast CDN caching
     },
 }
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -148,11 +167,17 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard_redirect'
 LOGOUT_REDIRECT_URL = 'login'
 
+# ------------------------------------------------------------------
 # 📌 Email Configuration (Gmail SMTP)
+# ------------------------------------------------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'tsome8522@gmail.com'
-EMAIL_HOST_PASSWORD = 'oittzkqatsynbhcd'
-DEFAULT_FROM_EMAIL = 'tsome8522@gmail.com'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'tsome8522@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get(
+    'EMAIL_HOST_PASSWORD', 'oittzkqatsynbhcd'
+)
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL', 'tsome8522@gmail.com'
+)

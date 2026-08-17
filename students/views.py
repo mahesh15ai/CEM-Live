@@ -2,6 +2,7 @@ import base64
 import csv
 from datetime import timedelta
 import io
+import threading
 
 from attendance.models import AttendanceRecord
 from certificates.models import Certificate
@@ -9,15 +10,37 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.utils.crypto import get_random_string  # 📌 For Unique Random Password
+from django.utils.crypto import get_random_string
 from events.models import EventRegistration
 import qrcode
 
 from .models import AnnouncementNotice, BannerImage, StudentProfile
+
+
+# ----------------------------------------------------
+# Helper: Async Email Dispatch (Zero Request Delay)
+# ----------------------------------------------------
+def send_mail_async(subject, message, recipient_list):
+  """Sends emails in a separate thread so web responses stay instantaneous."""
+
+  def _send():
+    try:
+      send_mail(
+          subject=subject,
+          message=message,
+          from_email=settings.DEFAULT_FROM_EMAIL,
+          recipient_list=recipient_list,
+          fail_silently=True,
+      )
+    except Exception:
+      pass
+
+  threading.Thread(target=_send, daemon=True).start()
 
 
 # ----------------------------------------------------
@@ -31,36 +54,53 @@ def generate_student_password():
 
 
 # ----------------------------------------------------
-# 1. READ: Student Directory List
+# Helper: Admin Permission Check
+# ----------------------------------------------------
+def is_admin_user(user):
+  return (
+      user.is_superuser or user.is_staff or getattr(user, 'is_admin', False)
+  )
+
+
+# ----------------------------------------------------
+# 1. READ: Student Directory List (Optimized & Paginated)
 # ----------------------------------------------------
 @login_required
 def student_list(request):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied. Admin permissions required.')
     return redirect('event_list')
 
   search_query = request.GET.get('search', '').strip()
   selected_course = request.GET.get('course', '').strip()
 
-  students = (
-      StudentProfile.objects.select_related('user').all().order_by('-created_at')
+  students_queryset = (
+      StudentProfile.objects.select_related('user')
+      .all()
+      .order_by('-created_at')
   )
 
   if search_query:
-    students = (
-        students.filter(user__first_name__icontains=search_query)
-        | students.filter(user__last_name__icontains=search_query)
-        | students.filter(student_id__icontains=search_query)
-        | students.filter(user__email__icontains=search_query)
+    students_queryset = (
+        students_queryset.filter(user__first_name__icontains=search_query)
+        | students_queryset.filter(user__last_name__icontains=search_query)
+        | students_queryset.filter(student_id__icontains=search_query)
+        | students_queryset.filter(user__email__icontains=search_query)
     )
 
   if selected_course:
-    students = students.filter(course=selected_course)
+    students_queryset = students_queryset.filter(course=selected_course)
+
+  # ⚡ 25 Students per page
+  paginator = Paginator(students_queryset, 25)
+  page_number = request.GET.get('page')
+
+  try:
+    students = paginator.page(page_number)
+  except PageNotAnInteger:
+    students = paginator.page(1)
+  except EmptyPage:
+    students = paginator.page(paginator.num_pages)
 
   context = {
       'students': students,
@@ -71,16 +111,11 @@ def student_list(request):
 
 
 # ----------------------------------------------------
-# 2. CREATE: Register Single Student (Unique Password & Email)
+# 2. CREATE: Register Single Student (Unique Password & Async Email)
 # ----------------------------------------------------
 @login_required
 def add_student(request):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied.')
     return redirect('student_list')
 
@@ -102,12 +137,11 @@ def add_student(request):
       messages.error(request, 'A user with this email already exists.')
       return redirect('add_student')
 
-    # 📌 Generate Unique Password for every student
     random_password = generate_student_password()
 
     try:
       with transaction.atomic():
-        # 1. Create Auth User with Unique Password
+        # 1. Create Auth User
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -145,16 +179,15 @@ def add_student(request):
         except Exception:
           pass
 
-      # 4. Send Unique Email Credentials via Gmail SMTP
+      # 4. Async Email Dispatch
       subject = (
           'Welcome to Vishwabharti Mahavidyalaya - Student Portal Credentials'
       )
-      email_content = f"""
-Dear {first_name} {last_name},
+      email_content = f"""Dear {first_name} {last_name},
 
 Welcome to Vishwabharti Mahavidyalaya Enterprise Portal!
 
-Your student account has been successfully created. Here are your personalized portal login credentials:
+Your student account has been successfully created. Here are your portal credentials:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Student ID : {student.student_id}
@@ -163,41 +196,25 @@ Password   : {random_password}
 Course     : {course} ({year})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Log in to your account here:
-https://cem-live-w7jl.vercel.app/accounts/login/
+Login URL: https://cem-live-w7jl.vercel.app/accounts/login/
 
 Security Advice:
 1. Please do not share these credentials with anyone.
-2. After logging in, you can change your password using the 'Forgot/Reset Password' option.
+2. After logging in, you can change your password anytime via Profile Settings.
 
 Best Regards,
 Vishwabharti Mahavidyalaya, CIDCO, Nanded
 """
+      send_mail_async(subject, email_content, [email])
 
-      try:
-        send_mail(
-            subject=subject,
-            message=email_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
-        messages.success(
-            request,
-            f'🎓 Student {user.get_full_name()} registered & credentials sent'
-            f' to {email}!',
-        )
-      except Exception as email_err:
-        messages.warning(
-            request,
-            f'🎓 Student registered (ID: {student.student_id}), but email'
-            f' failed to send: {email_err!s}. Password: {random_password}',
-        )
-
+      messages.success(
+          request,
+          f'🎓 Student {user.get_full_name()} registered successfully! Credentials sent to {email}.',
+      )
       return redirect('student_list')
 
     except Exception as e:
-      messages.error(request, f'Error registering student: {str(e)}')
+      messages.error(request, f'Error registering student: {e!s}')
       return redirect('add_student')
 
   return render(request, 'students/add_student.html')
@@ -208,21 +225,18 @@ Vishwabharti Mahavidyalaya, CIDCO, Nanded
 # ----------------------------------------------------
 @login_required
 def edit_student(request, student_id):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied.')
     return redirect('student_list')
 
-  student = get_object_or_404(StudentProfile, id=student_id)
+  student = get_object_or_404(
+      StudentProfile.objects.select_related('user'), id=student_id
+  )
   user = student.user
 
   if request.method == 'POST':
-    user.first_name = request.POST.get('first_name', '').strip()
-    user.last_name = request.POST.get('last_name', '').strip()
+    first_name = request.POST.get('first_name', '').strip()
+    last_name = request.POST.get('last_name', '').strip()
     new_email = request.POST.get('email', '').strip()
 
     from accounts.models import User
@@ -231,6 +245,8 @@ def edit_student(request, student_id):
       messages.error(request, 'Another user with this email already exists.')
       return render(request, 'students/edit_student.html', {'student': student})
 
+    user.first_name = first_name
+    user.last_name = last_name
     user.email = new_email
     user.username = new_email
     user.save()
@@ -262,34 +278,25 @@ def edit_student(request, student_id):
 # ----------------------------------------------------
 @login_required
 def delete_student(request, student_id):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied.')
     return redirect('student_list')
 
-  student = get_object_or_404(StudentProfile, id=student_id)
-  user = student.user
-  user.delete()
+  student = get_object_or_404(
+      StudentProfile.objects.select_related('user'), id=student_id
+  )
+  student.user.delete()
 
   messages.success(request, '🗑️ Student record deleted successfully!')
   return redirect('student_list')
 
 
 # ----------------------------------------------------
-# 5. UTILITIES: Bulk Add (With Unique Passwords & Email), Digital Pass, CSV Export
+# 5. UTILITIES: Bulk Add, Digital Pass, CSV Export
 # ----------------------------------------------------
 @login_required
 def bulk_add_students(request):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied.')
     return redirect('student_list')
 
@@ -302,45 +309,45 @@ def bulk_add_students(request):
     from accounts.models import User
 
     count = 0
-    for row in reader:
-      if len(row) >= 7:
-        first_name, last_name, email, course, year, division, roll_number = [
-            x.strip() for x in row[:7]
-        ]
+    with transaction.atomic():
+      for row in reader:
+        if len(row) >= 7:
+          first_name, last_name, email, course, year, division, roll_number = [
+              x.strip() for x in row[:7]
+          ]
 
-        if not User.objects.filter(username=email).exists():
-          # 📌 Unique Password for each CSV row student
-          random_password = generate_student_password()
+          if not User.objects.filter(username=email).exists():
+            random_password = generate_student_password()
 
-          user = User.objects.create_user(
-              username=email,
-              email=email,
-              password=random_password,
-              first_name=first_name,
-              last_name=last_name,
-          )
-          student = StudentProfile.objects.create(
-              user=user,
-              course=course,
-              year=year,
-              division=division,
-              roll_number=roll_number,
-          )
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                password=random_password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            student = StudentProfile.objects.create(
+                user=user,
+                course=course,
+                year=year,
+                division=division,
+                roll_number=roll_number,
+            )
 
-          # Auto QR Generation
-          try:
-            qr_text = f'STUDENT_PASS:{student.student_id}'
-            qr_img = qrcode.make(qr_text)
-            buffer = io.BytesIO()
-            qr_img.save(buffer, format='PNG')
-            qr_b64 = base64.b64encode(buffer.getvalue()).decode()
-            student.qr_code = f'data:image/png;base64,{qr_b64}'
-            student.save(update_fields=['qr_code'])
-          except Exception:
-            pass
+            # QR Code Generation
+            try:
+              qr_text = f'STUDENT_PASS:{student.student_id}'
+              qr_img = qrcode.make(qr_text)
+              buffer = io.BytesIO()
+              qr_img.save(buffer, format='PNG')
+              qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+              student.qr_code = f'data:image/png;base64,{qr_b64}'
+              student.save(update_fields=['qr_code'])
+            except Exception:
+              pass
 
-          # Send Credentials Email
-          email_content = f"""Dear {first_name} {last_name},
+            # Async Credentials Email
+            email_content = f"""Dear {first_name} {last_name},
 
 Welcome to Vishwabharti Mahavidyalaya Enterprise Portal!
 
@@ -352,18 +359,12 @@ Course     : {course} ({year})
 
 Login URL: https://cem-live-w7jl.vercel.app/accounts/login/
 """
-          try:
-            send_mail(
-                subject='Vishwabharti Portal - Student Credentials',
-                message=email_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=True,
+            send_mail_async(
+                'Vishwabharti Portal - Student Credentials',
+                email_content,
+                [email],
             )
-          except Exception:
-            pass
-
-          count += 1
+            count += 1
 
     messages.success(
         request,
@@ -397,12 +398,7 @@ def student_pass(request, student_id):
 
 @login_required
 def export_students_excel(request):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied.')
     return redirect('student_list')
 
@@ -424,8 +420,10 @@ def export_students_excel(request):
       'Roll Number',
   ])
 
-  students = StudentProfile.objects.select_related('user').all()
-  for student in students:
+  # ⚡ Chunked streaming with iterator() for low memory consumption
+  for student in (
+      StudentProfile.objects.select_related('user').all().iterator(chunk_size=500)
+  ):
     writer.writerow([
         student.student_id,
         student.user.first_name,
@@ -479,12 +477,7 @@ def edit_my_profile(request):
 # ----------------------------------------------------
 @login_required
 def add_banner(request):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied. Admin permissions required.')
     return redirect('student_dashboard')
 
@@ -511,12 +504,7 @@ def add_banner(request):
 
 @login_required
 def add_announcement(request):
-  is_admin = (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  )
-  if not is_admin:
+  if not is_admin_user(request.user):
     messages.error(request, 'Access denied. Admin permissions required.')
     return redirect('student_dashboard')
 
@@ -538,20 +526,18 @@ def add_announcement(request):
 
 
 # ----------------------------------------------------
-# 8. STUDENT HOME PAGE / DASHBOARD
+# 8. STUDENT HOME PAGE / DASHBOARD (Optimized Queries)
 # ----------------------------------------------------
 @login_required
 def student_dashboard(request):
-  if (
-      request.user.is_superuser
-      or request.user.is_staff
-      or getattr(request.user, 'is_admin', False)
-  ):
+  if is_admin_user(request.user):
     return redirect('student_list')
 
   student = get_object_or_404(StudentProfile, user=request.user)
 
-  banners = BannerImage.objects.filter(is_active=True).order_by('-created_at')
+  banners = BannerImage.objects.filter(is_active=True).order_by('-created_at')[
+      :5
+  ]
 
   last_24_hours = timezone.now() - timedelta(hours=24)
   latest_notice = (

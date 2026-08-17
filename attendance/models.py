@@ -51,4 +51,4 @@ class DailyClassAttendance(models.Model):
         unique_together = ('student', 'date')
 
     def __str__(self):
-        return f"{self.student.student_id} | {self.date} | {self.status}"
+        return f"{self.student.student_id} | {self.date} | {self.status}"                                                                                                                                                     

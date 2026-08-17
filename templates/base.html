@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vishwabharti Mahavidyalaya - Enterprise Portal</title>
+    <title>{% block title %}Vishwabharti Mahavidyalaya - Enterprise Portal{% endblock %}</title>
     
     <!-- 📌 Favicon Icon -->
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
@@ -51,8 +51,55 @@
     <!-- FontAwesome 6 Icons & Inter Font -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- ⚡ NProgress Loading Bar CDN & Custom Styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+    <style>
+        #nprogress .bar {
+            background: #8c1135 !important;
+            height: 3px !important;
+            z-index: 99999 !important;
+        }
+        #nprogress .peg {
+            box-shadow: 0 0 10px #8c1135, 0 0 5px #8c1135 !important;
+        }
+        #nprogress .spinner-icon {
+            border-top-color: #8c1135 !important;
+            border-left-color: #8c1135 !important;
+        }
+    </style>
 </head>
 <body class="h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-x-hidden transition-colors duration-300">
+
+    <!-- 📌 Floating Toast Messages Notification Container -->
+    {% if messages %}
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 max-w-sm w-full pointer-events-none">
+        {% for message in messages %}
+        <div class="toast-item pointer-events-auto flex items-start p-4 rounded-2xl shadow-xl border backdrop-blur-md transition-all duration-300 transform translate-y-0
+            {% if message.tags == 'error' %}
+                bg-rose-50/95 dark:bg-rose-950/90 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200
+            {% elif message.tags == 'warning' %}
+                bg-amber-50/95 dark:bg-amber-950/90 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200
+            {% else %}
+                bg-emerald-50/95 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200
+            {% endif %}">
+            <div class="mr-3 text-lg flex-shrink-0 mt-0.5">
+                {% if message.tags == 'error' %}
+                    <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                {% else %}
+                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                {% endif %}
+            </div>
+            <div class="text-xs sm:text-sm font-semibold flex-1 leading-snug">{{ message }}</div>
+            <button onclick="dismissToast(this.parentElement)" class="ml-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm flex-shrink-0">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     {% if user.is_authenticated %}
     <!-- Mobile Navigation Top Bar -->
@@ -190,7 +237,7 @@
     {% endif %}
 
     <!-- Main Content Body -->
-    <div class="flex-1 flex flex-col min-w-0 w-full md:pl-64 min-h-screen">
+    <div class="flex-1 flex flex-col min-w-0 w-full {% if user.is_authenticated %}md:pl-64{% endif %} min-h-screen">
         {% if user.is_authenticated %}
         <header class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm transition-colors duration-300">
             <div class="flex items-center space-x-3">
@@ -224,36 +271,50 @@
         {% endif %}
 
         <main class="p-4 sm:p-6 lg:p-8 flex-grow w-full max-w-7xl mx-auto">
-            <!-- Alert Messages Container -->
-            {% if messages %}
-                <div id="django-messages" class="space-y-3 transition-opacity duration-500 ease-in-out mb-6">
-                    {% for message in messages %}
-                        <div class="p-4 rounded-xl text-xs sm:text-sm font-semibold shadow-sm border flex items-center space-x-3 {% if message.tags == 'error' %}bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800{% else %}bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800{% endif %}">
-                            <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation text-rose-500{% else %}fa-circle-check text-emerald-500{% endif %} text-lg"></i>
-                            <span>{{ message }}</span>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
             {% block content %}{% endblock %}
         </main>
     </div>
 
-    <!-- Scripts -->
+    <!-- ⚡ NProgress Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+
+    <!-- Global Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const messagesContainer = document.getElementById('django-messages');
-            if (messagesContainer) {
-                setTimeout(() => {
-                    messagesContainer.style.opacity = '0';
-                    setTimeout(() => {
-                        messagesContainer.remove();
-                    }, 500); 
-                }, 3000); 
-            }
+        // --- 1. NProgress Setup ---
+        NProgress.configure({ showSpinner: false, trickleSpeed: 200 });
+
+        window.addEventListener('beforeunload', () => {
+            NProgress.start();
         });
 
+        document.addEventListener('DOMContentLoaded', () => {
+            NProgress.done();
+
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:') && !this.hasAttribute('download') && this.target !== '_blank') {
+                        NProgress.start();
+                    }
+                });
+            });
+        });
+
+        // --- 2. Floating Toast Auto-Dismiss ---
+        function dismissToast(el) {
+            if (!el) return;
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(20px)';
+            setTimeout(() => el.remove(), 300);
+        }
+
+        setTimeout(() => {
+            document.querySelectorAll('.toast-item').forEach(toast => {
+                dismissToast(toast);
+            });
+        }, 4000);
+
+        // --- 3. Dark Mode Management ---
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('app_theme_mode', isDark ? 'dark' : 'light');
@@ -280,6 +341,7 @@
             updateThemeUI(currentMode === 'dark');
         });
 
+        // --- 4. Mobile Menu Drawer ---
         const toggleBtn = document.getElementById('mobile-menu-toggle');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
