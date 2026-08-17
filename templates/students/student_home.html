@@ -10,33 +10,52 @@
         <!-- Slider Container -->
         <div id="event-carousel" class="relative w-full h-72 sm:h-[420px] flex transition-transform duration-700 ease-in-out">
             {% for banner in banners %}
-            <div class="w-full h-full flex-shrink-0 relative">
-                <img src="{{ banner.image.url }}" class="w-full h-full object-cover">
+            <div onclick="openBannerModal('{{ banner.image.url }}', '{{ banner.badge_text|escapejs }}', '{{ banner.title|escapejs }}', '{{ banner.subtitle|default:''|escapejs }}')" 
+                 class="w-full h-full flex-shrink-0 relative cursor-pointer group select-none">
+                <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent p-6 sm:p-10 flex flex-col justify-end">
-                    <span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase px-3.5 py-1 rounded-full w-max mb-2 shadow-md">
-                        {{ banner.badge_text }}
-                    </span>
-                    <h2 class="text-2xl sm:text-4xl font-black text-white">{{ banner.title }}</h2>
+                    <div class="flex items-center justify-between">
+                        <span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase px-3.5 py-1 rounded-full w-max mb-2 shadow-md">
+                            {{ banner.badge_text }}
+                        </span>
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-expand"></i> Click to preview
+                        </span>
+                    </div>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white group-hover:text-amber-300 transition-colors">{{ banner.title }}</h2>
                     {% if banner.subtitle %}
-                    <p class="text-xs sm:text-sm text-slate-300 mt-1">{{ banner.subtitle }}</p>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-1 line-clamp-2">{{ banner.subtitle }}</p>
                     {% endif %}
                 </div>
             </div>
             {% empty %}
-            <!-- Default Slide if no admin banners are uploaded -->
-            <div class="w-full h-full flex-shrink-0 relative">
-                <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover">
+            <!-- Default Slide 1 -->
+            <div onclick="openBannerModal('https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1200&q=80', 'Annual Convocation 2026', 'Vishwabharti Annual Ceremony & Gathering', 'Celebrating excellence in academics, sports, and technical achievements.')"
+                 class="w-full h-full flex-shrink-0 relative cursor-pointer group select-none">
+                <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent p-6 sm:p-10 flex flex-col justify-end">
-                    <span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase px-3.5 py-1 rounded-full w-max mb-2 shadow-md">Annual Convocation 2026</span>
-                    <h2 class="text-2xl sm:text-4xl font-black text-white">Vishwabharti Annual Ceremony & Gathering</h2>
+                    <div class="flex items-center justify-between">
+                        <span class="bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase px-3.5 py-1 rounded-full w-max mb-2 shadow-md">Annual Convocation 2026</span>
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-expand"></i> Click to preview
+                        </span>
+                    </div>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white group-hover:text-amber-300 transition-colors">Vishwabharti Annual Ceremony & Gathering</h2>
                     <p class="text-xs sm:text-sm text-slate-300 mt-1">Celebrating excellence in academics, sports, and technical achievements.</p>
                 </div>
             </div>
-            <div class="w-full h-full flex-shrink-0 relative">
-                <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover">
+            <!-- Default Slide 2 -->
+            <div onclick="openBannerModal('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80', 'Sports Meet 2026', 'Inter-College Sports Tournament', 'Cricket, Volleyball, Athletics & Chess Competitions.')"
+                 class="w-full h-full flex-shrink-0 relative cursor-pointer group select-none">
+                <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent p-6 sm:p-10 flex flex-col justify-end">
-                    <span class="bg-emerald-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase px-3.5 py-1 rounded-full w-max mb-2 shadow-md">Sports Meet 2026</span>
-                    <h2 class="text-2xl sm:text-4xl font-black text-white">Inter-College Sports Tournament</h2>
+                    <div class="flex items-center justify-between">
+                        <span class="bg-emerald-400 text-slate-950 font-black text-[10px] sm:text-xs uppercase px-3.5 py-1 rounded-full w-max mb-2 shadow-md">Sports Meet 2026</span>
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-expand"></i> Click to preview
+                        </span>
+                    </div>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white group-hover:text-emerald-300 transition-colors">Inter-College Sports Tournament</h2>
                     <p class="text-xs sm:text-sm text-slate-300 mt-1">Cricket, Volleyball, Athletics & Chess Competitions.</p>
                 </div>
             </div>
@@ -44,29 +63,28 @@
         </div>
 
         <!-- Left / Right Control Navigation Buttons -->
-        <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-slate-900/60 hover:bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition border border-white/10 shadow-lg">
+        <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-slate-900/60 hover:bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition border border-white/10 shadow-lg z-10">
             <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-900/60 hover:bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition border border-white/10 shadow-lg">
+        <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-900/60 hover:bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition border border-white/10 shadow-lg z-10">
             <i class="fa-solid fa-chevron-right"></i>
         </button>
 
         <!-- Dynamic Carousel Dots -->
-        <div id="carousel-dots" class="absolute bottom-4 right-6 flex items-center gap-2"></div>
-
+        <div id="carousel-dots" class="absolute bottom-4 right-6 flex items-center gap-2 z-10"></div>
     </div>
 
     <!-- 2. Clean Welcome Message Bar -->
-    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <div class="flex items-center gap-2 mb-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                <span class="text-[11px] font-extrabold text-brand-600 uppercase tracking-wider">Vishwabharti Student Portal</span>
+                <span class="text-[11px] font-extrabold text-brand-600 dark:text-brand-accent uppercase tracking-wider">Vishwabharti Student Portal</span>
             </div>
-            <h1 class="text-xl sm:text-2xl font-black text-slate-900">
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
                 Welcome back, {{ student.user.first_name }} {{ student.user.last_name }}! 👋
             </h1>
-            <p class="text-xs text-slate-500 mt-1">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {{ student.course }} ({{ student.year }}) &bull; Division {{ student.division }} &bull; Roll No: {{ student.roll_number }}
             </p>
         </div>
@@ -81,35 +99,35 @@
 
     <!-- 3. Quick Action Cards Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <a href="{% url 'student_profile_view' %}" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
-            <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
+        <a href="{% url 'student_profile_view' %}" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
+            <div class="w-12 h-12 bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-qrcode"></i>
             </div>
-            <span class="text-xs font-bold text-slate-800">Digital QR Pass</span>
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Digital QR Pass</span>
             <span class="text-[10px] text-slate-400 mt-0.5">Show Gate Entry Pass</span>
         </a>
 
-        <a href="{% url 'event_list' %}" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
-            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
+        <a href="{% url 'event_list' %}" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
+            <div class="w-12 h-12 bg-amber-50 dark:bg-slate-700 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-trophy"></i>
             </div>
-            <span class="text-xs font-bold text-slate-800">Campus Events</span>
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Campus Events</span>
             <span class="text-[10px] text-slate-400 mt-0.5">Fests & Sports Meet</span>
         </a>
 
-        <a href="{% url 'certificate_list' %}" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
-            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
+        <a href="{% url 'certificate_list' %}" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
+            <div class="w-12 h-12 bg-emerald-50 dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-award"></i>
             </div>
-            <span class="text-xs font-bold text-slate-800">My Certificates</span>
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">My Certificates</span>
             <span class="text-[10px] text-slate-400 mt-0.5">View Achievements</span>
         </a>
 
-        <a href="{% url 'edit_my_profile' %}" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
-            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
+        <a href="{% url 'edit_my_profile' %}" class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition flex flex-col items-center text-center group">
+            <div class="w-12 h-12 bg-purple-50 dark:bg-slate-700 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-user-gear"></i>
             </div>
-            <span class="text-xs font-bold text-slate-800">Edit Details</span>
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Edit Details</span>
             <span class="text-[10px] text-slate-400 mt-0.5">Update Photo & Info</span>
         </a>
     </div>
@@ -118,7 +136,7 @@
     {% if latest_notice %}
     <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
         <div class="bg-brand-600 text-white text-xs font-black px-3 py-1.5 rounded-xl uppercase tracking-wider flex-shrink-0">
-            {{ latest_notice.title }}
+            {{ latest_notice.title|default:"Announcement" }}
         </div>
         <p class="text-xs text-slate-300 truncate">
             📢 {{ latest_notice.notice_text }}
@@ -128,8 +146,43 @@
 
 </div>
 
-<!-- JavaScript for Dynamic Carousel Sliding -->
+<!-- 📌 Banner Preview Modal Popup -->
+<div id="banner-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="banner-modal-box" class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200/80 dark:border-slate-800 transform transition-all duration-200 scale-95 flex flex-col max-h-[90vh]">
+        
+        <!-- Modal Top Bar -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <span id="modal-badge" class="bg-amber-400 text-slate-950 font-black text-[10px] uppercase px-3 py-1 rounded-full shadow-sm">
+                Event
+            </span>
+            <button onclick="closeBannerModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Modal Image Viewport -->
+        <div class="w-full bg-slate-950 overflow-hidden flex items-center justify-center">
+            <img id="modal-image" src="" alt="Banner Preview" class="w-full max-h-80 sm:max-h-96 object-contain">
+        </div>
+
+        <!-- Modal Info Stack -->
+        <div class="p-6 overflow-y-auto space-y-2">
+            <h2 id="modal-title" class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-snug"></h2>
+            <p id="modal-subtitle" class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed"></p>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="bg-slate-50 dark:bg-slate-900/80 px-6 py-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <button onclick="closeBannerModal()" class="px-5 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-xl transition">
+                Close Preview
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Carousel Sliding & Banner Modal -->
 <script>
+    // --- 1. Carousel Logic ---
     const carousel = document.getElementById('event-carousel');
     const prevBtn = document.getElementById('prev-slide');
     const nextBtn = document.getElementById('next-slide');
@@ -137,11 +190,17 @@
     
     const totalSlides = carousel.children.length;
     let currentIndex = 0;
+    let autoSlideInterval;
 
-    // Create Dots dynamically based on available slides
     for (let i = 0; i < totalSlides; i++) {
         const dot = document.createElement('span');
-        dot.className = i === 0 ? 'dot w-4 h-1.5 rounded-full bg-white transition-all' : 'dot w-1.5 h-1.5 rounded-full bg-white/40 transition-all';
+        dot.className = i === 0 ? 'dot w-4 h-1.5 rounded-full bg-white transition-all cursor-pointer' : 'dot w-1.5 h-1.5 rounded-full bg-white/40 transition-all cursor-pointer';
+        dot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentIndex = i;
+            updateCarousel();
+            resetAutoSlide();
+        });
         dotsContainer.appendChild(dot);
     }
     const dots = document.querySelectorAll('.dot');
@@ -159,21 +218,77 @@
         });
     }
 
+    function resetAutoSlide() {
+        clearInterval(autoSlideInterval);
+        if (totalSlides > 1) {
+            autoSlideInterval = setInterval(() => {
+                currentIndex = (currentIndex + 1) % totalSlides;
+                updateCarousel();
+            }, 4500);
+        }
+    }
+
     if (totalSlides > 1) {
-        nextBtn.addEventListener('click', () => {
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             currentIndex = (currentIndex + 1) % totalSlides;
             updateCarousel();
+            resetAutoSlide();
         });
 
-        prevBtn.addEventListener('click', () => {
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
             updateCarousel();
+            resetAutoSlide();
         });
 
-        setInterval(() => {
-            currentIndex = (currentIndex + 1) % totalSlides;
-            updateCarousel();
-        }, 4000);
+        resetAutoSlide();
     }
+
+    // --- 2. Banner Modal Logic ---
+    function openBannerModal(imageUrl, badge, title, subtitle) {
+        document.getElementById('modal-image').src = imageUrl;
+        document.getElementById('modal-badge').innerText = badge || 'Event';
+        document.getElementById('modal-title').innerText = title;
+        
+        const subtitleEl = document.getElementById('modal-subtitle');
+        if (subtitle && subtitle.trim() !== '') {
+            subtitleEl.innerText = subtitle;
+            subtitleEl.classList.remove('hidden');
+        } else {
+            subtitleEl.classList.add('hidden');
+        }
+
+        const modal = document.getElementById('banner-modal');
+        const box = document.getElementById('banner-modal-box');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            box.classList.remove('scale-95');
+            box.classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeBannerModal() {
+        const modal = document.getElementById('banner-modal');
+        const box = document.getElementById('banner-modal-box');
+        box.classList.remove('scale-100');
+        box.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 150);
+    }
+
+    document.getElementById('banner-modal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeBannerModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeBannerModal();
+        }
+    });
 </script>
 {% endblock %}
