@@ -6,14 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}Vishwabharti Mahavidyalaya - Enterprise Portal{% endblock %}</title>
     
-    <!-- 📌 Favicon Icon -->
+    <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Theme Configuration Script -->
+    <!-- Theme & Tailwind Configuration -->
     <script>
         const savedMode = localStorage.getItem('app_theme_mode') || 'light';
 
@@ -25,10 +25,15 @@
                         brand: {
                             50: '#fdf2f4',
                             100: '#fbe5e9',
+                            200: '#f7ccd4',
+                            300: '#f0a3b2',
+                            400: '#e56d86',
                             500: '#8c1135',
                             600: '#5C061C', /* Vishwabharti Maroon */
                             700: '#4A0415',
                             800: '#38020F',
+                            900: '#26010a',
+                            950: '#150005',
                             accent: '#D4AF37', /* Gold Accent */
                         }
                     },
@@ -52,8 +57,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- ⚡ NProgress Loading Bar CDN & Custom Styling -->
+    <!-- SweetAlert2 CDN (Loaded in Head for immediate script access) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- NProgress Loading Bar -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+
     <style>
         #nprogress .bar {
             background: #8c1135 !important;
@@ -68,7 +79,7 @@
             border-left-color: #8c1135 !important;
         }
 
-        /* 🔔 SweetAlert2 Toast & Popup Styling */
+        /* SweetAlert2 Toast & Popup Theming */
         .swal2-toast {
             border-radius: 1rem !important;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
@@ -96,9 +107,6 @@
             background: #D4AF37 !important;
         }
     </style>
-    
-    <!-- SweetAlert2 CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body class="h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-x-hidden transition-colors duration-300">
 
@@ -114,7 +122,7 @@
                 <span class="text-[9px] text-brand-accent font-semibold tracking-wider uppercase block">CIDCO, Nanded</span>
             </div>
         </div>
-        <button id="mobile-menu-toggle" class="p-2 text-white focus:outline-none rounded-lg hover:bg-brand-600">
+        <button id="mobile-menu-toggle" aria-label="Toggle navigation" class="p-2 text-white focus:outline-none rounded-lg hover:bg-brand-600">
             <i class="fa-solid fa-bars text-xl"></i>
         </button>
     </div>
@@ -137,7 +145,7 @@
             {% with current_url=request.resolver_match.url_name %}
             <nav class="p-3 space-y-1 text-sm font-medium">
                 
-                <!-- 1. TEACHER / FACULTY SECTION (Priority 1) -->
+                <!-- 1. TEACHER / FACULTY SECTION -->
                 {% if user.is_teacher or user.teacher_profile %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Class Teacher Hub</div>
 
@@ -156,7 +164,7 @@
                     <span>Attendance Analytics</span>
                 </a>
 
-                <!-- 2. ADMIN / SUPERUSER / STAFF SECTION (Priority 2) -->
+                <!-- 2. ADMIN / SUPERUSER / STAFF SECTION -->
                 {% elif user.is_superuser or user.is_staff or user.is_admin %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Administration</div>
 
@@ -190,7 +198,7 @@
                     <span>Event Attendance</span>
                 </a>
 
-                <!-- 3. STUDENT SELF-SERVICE SECTION (Priority 3) -->
+                <!-- 3. STUDENT SELF-SERVICE SECTION -->
                 {% elif user.is_student or user.student_profile %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Student Portal</div>
 
@@ -252,7 +260,7 @@
                     <span id="theme-toggle-text">Dark</span>
                 </button>
 
-                <!-- Dynamic User Role Badge (Priority-Ordered) -->
+                <!-- Dynamic User Role Badge -->
                 <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent border border-brand-100 dark:border-slate-600">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>
@@ -276,13 +284,19 @@
         </main>
     </div>
 
-    <!-- ⚡ SweetAlert2 & NProgress Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+    <!-- Hidden Container for Server Messages -->
+    {% if messages %}
+    <div id="django-messages" class="hidden">
+        {% for message in messages %}
+        <div data-type="{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% else %}success{% endif %}"
+             data-message="{{ message|escapejs }}"></div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-    <!-- Global Scripts -->
+    <!-- Global Application Scripts -->
     <script>
-        // --- 1. SweetAlert2 Enterprise Toast Engine ---
+        // --- 1. SweetAlert2 Toast Global Engine ---
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -296,30 +310,26 @@
             }
         });
 
-        // Global helper accessible anywhere in scripts
         window.showToast = function(icon, message) {
             Toast.fire({
-                icon: icon, // 'success' | 'error' | 'warning' | 'info' | 'question'
+                icon: icon,
                 title: message
             });
         };
 
-        // Auto-display Django Server-Side Messages
-        {% if messages %}
-            document.addEventListener('DOMContentLoaded', () => {
-                {% for message in messages %}
-                    {% if message.tags == 'error' %}
-                        showToast('error', "{{ message|escapejs }}");
-                    {% elif message.tags == 'warning' %}
-                        showToast('warning', "{{ message|escapejs }}");
-                    {% elif message.tags == 'info' %}
-                        showToast('info', "{{ message|escapejs }}");
-                    {% else %}
-                        showToast('success', "{{ message|escapejs }}");
-                    {% endif %}
-                {% endfor %}
-            });
-        {% endif %}
+        // Process Django Messages cleanly via HTML attributes
+        document.addEventListener('DOMContentLoaded', () => {
+            const msgContainer = document.getElementById('django-messages');
+            if (msgContainer) {
+                msgContainer.querySelectorAll('div').forEach(item => {
+                    const type = item.getAttribute('data-type');
+                    const text = item.getAttribute('data-message');
+                    if (text) {
+                        showToast(type, text);
+                    }
+                });
+            }
+        });
 
         // --- 2. NProgress Setup ---
         NProgress.configure({ showSpinner: false, trickleSpeed: 200 });
@@ -334,7 +344,14 @@
             document.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', function(e) {
                     const href = this.getAttribute('href');
-                    if (href && !href.startsWith('#') && !href.startsWith('javascript:') && !this.hasAttribute('download') && this.target !== '_blank') {
+                    if (
+                        href && 
+                        !href.startsWith('#') && 
+                        !href.startsWith('javascript:') && 
+                        !this.hasAttribute('download') && 
+                        this.target !== '_blank' && 
+                        !e.defaultPrevented
+                    ) {
                         NProgress.start();
                     }
                 });
@@ -373,7 +390,7 @@
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
 
-        if(toggleBtn && sidebar && overlay) {
+        if (toggleBtn && sidebar && overlay) {
             toggleBtn.addEventListener('click', () => {
                 sidebar.classList.toggle('-translate-x-full');
                 overlay.classList.toggle('hidden');
