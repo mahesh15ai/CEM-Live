@@ -67,39 +67,40 @@
             border-top-color: #8c1135 !important;
             border-left-color: #8c1135 !important;
         }
+
+        /* 🔔 SweetAlert2 Toast & Popup Styling */
+        .swal2-toast {
+            border-radius: 1rem !important;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+            padding: 0.85rem 1.15rem !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        .dark .swal2-popup.swal2-toast {
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+            border: 1px solid #334155 !important;
+        }
+        .swal2-title {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            line-height: 1.35 !important;
+        }
+        .dark .swal2-title {
+            color: #f1f5f9 !important;
+        }
+        .swal2-timer-progress-bar {
+            background: #5C061C !important;
+        }
+        .dark .swal2-timer-progress-bar {
+            background: #D4AF37 !important;
+        }
     </style>
+    
+    <!-- SweetAlert2 CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body class="h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-x-hidden transition-colors duration-300">
-
-    <!-- 📌 Floating Toast Messages Notification Container -->
-    {% if messages %}
-    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3 max-w-sm w-full pointer-events-none">
-        {% for message in messages %}
-        <div class="toast-item pointer-events-auto flex items-start p-4 rounded-2xl shadow-xl border backdrop-blur-md transition-all duration-300 transform translate-y-0
-            {% if message.tags == 'error' %}
-                bg-rose-50/95 dark:bg-rose-950/90 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200
-            {% elif message.tags == 'warning' %}
-                bg-amber-50/95 dark:bg-amber-950/90 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200
-            {% else %}
-                bg-emerald-50/95 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200
-            {% endif %}">
-            <div class="mr-3 text-lg flex-shrink-0 mt-0.5">
-                {% if message.tags == 'error' %}
-                    <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
-                {% elif message.tags == 'warning' %}
-                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
-                {% else %}
-                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                {% endif %}
-            </div>
-            <div class="text-xs sm:text-sm font-semibold flex-1 leading-snug">{{ message }}</div>
-            <button onclick="dismissToast(this.parentElement)" class="ml-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm flex-shrink-0">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     {% if user.is_authenticated %}
     <!-- Mobile Navigation Top Bar -->
@@ -275,12 +276,52 @@
         </main>
     </div>
 
-    <!-- ⚡ NProgress Scripts -->
+    <!-- ⚡ SweetAlert2 & NProgress Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
 
     <!-- Global Scripts -->
     <script>
-        // --- 1. NProgress Setup ---
+        // --- 1. SweetAlert2 Enterprise Toast Engine ---
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true,
+            showCloseButton: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        // Global helper accessible anywhere in scripts
+        window.showToast = function(icon, message) {
+            Toast.fire({
+                icon: icon, // 'success' | 'error' | 'warning' | 'info' | 'question'
+                title: message
+            });
+        };
+
+        // Auto-display Django Server-Side Messages
+        {% if messages %}
+            document.addEventListener('DOMContentLoaded', () => {
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        showToast('error', "{{ message|escapejs }}");
+                    {% elif message.tags == 'warning' %}
+                        showToast('warning', "{{ message|escapejs }}");
+                    {% elif message.tags == 'info' %}
+                        showToast('info', "{{ message|escapejs }}");
+                    {% else %}
+                        showToast('success', "{{ message|escapejs }}");
+                    {% endif %}
+                {% endfor %}
+            });
+        {% endif %}
+
+        // --- 2. NProgress Setup ---
         NProgress.configure({ showSpinner: false, trickleSpeed: 200 });
 
         window.addEventListener('beforeunload', () => {
@@ -299,20 +340,6 @@
                 });
             });
         });
-
-        // --- 2. Floating Toast Auto-Dismiss ---
-        function dismissToast(el) {
-            if (!el) return;
-            el.style.opacity = '0';
-            el.style.transform = 'translateX(20px)';
-            setTimeout(() => el.remove(), 300);
-        }
-
-        setTimeout(() => {
-            document.querySelectorAll('.toast-item').forEach(toast => {
-                dismissToast(toast);
-            });
-        }, 4000);
 
         // --- 3. Dark Mode Management ---
         function toggleDarkMode() {

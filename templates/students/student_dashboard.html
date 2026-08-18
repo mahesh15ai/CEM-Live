@@ -1,61 +1,470 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | Vishwabharti Portal{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-7xl mx-auto space-y-8 pb-12">
 
-    {% if profile %}
-    <!-- Student Header Profile Card -->
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-        <div class="w-24 h-24 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center font-black text-3xl border-2 border-brand-200 overflow-hidden shadow-inner flex-shrink-0">
-            {% if profile.photo %}
-                <img src="{{ profile.photo.url }}" class="w-full h-full object-cover">
-            {% else %}
-                {{ profile.user.first_name|slice:":1"|upper }}
-            {% endif %}
+    <!-- 1. Hero Dynamic Carousel -->
+    <section class="relative bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 group select-none">
+        
+        <!-- Slider Track -->
+        <div id="event-carousel" class="relative w-full h-80 sm:h-[460px] flex transition-transform duration-700 cubic-bezier(0.25, 1, 0.5, 1)">
+            {% for banner in banners %}
+            <article onclick="openBannerModal('{{ banner.image.url }}', '{{ banner.badge_text|escapejs }}', '{{ banner.title|escapejs }}', '{{ banner.subtitle|default:''|escapejs }}')" 
+                     class="w-full h-full flex-shrink-0 relative cursor-pointer overflow-hidden group/slide"
+                     tabindex="0"
+                     role="button"
+                     aria-label="View banner details for {{ banner.title }}">
+                <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="w-full h-full object-cover transform scale-100 group-hover/slide:scale-105 transition-transform duration-1000 ease-out">
+                
+                <!-- Ambient Gradient Layer -->
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-6 sm:p-12 flex flex-col justify-end">
+                    <div class="max-w-3xl space-y-2.5">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-accent text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-lg">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse"></span>
+                                {{ banner.badge_text }}
+                            </span>
+                            <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs font-semibold border border-white/10">
+                                <i class="fa-solid fa-expand text-[10px]"></i> Preview
+                            </span>
+                        </div>
+                        <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight group-hover/slide:text-brand-accent transition-colors drop-shadow-md">
+                            {{ banner.title }}
+                        </h2>
+                        {% if banner.subtitle %}
+                        <p class="text-xs sm:text-base text-slate-300 line-clamp-2 max-w-2xl font-normal leading-relaxed drop-shadow">
+                            {{ banner.subtitle }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <!-- Default Slide 1 -->
+            <article onclick="openBannerModal('https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80', 'Annual Convocation', 'Vishwabharti Annual Ceremony & Gathering', 'Celebrating student academic excellence, sports milestones, and technical achievements.')"
+                     class="w-full h-full flex-shrink-0 relative cursor-pointer overflow-hidden group/slide"
+                     tabindex="0"
+                     role="button">
+                <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80" alt="Convocation" class="w-full h-full object-cover transform scale-100 group-hover/slide:scale-105 transition-transform duration-1000 ease-out">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-6 sm:p-12 flex flex-col justify-end">
+                    <div class="max-w-3xl space-y-2.5">
+                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-accent text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-lg">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse"></span>
+                            Campus Event
+                        </span>
+                        <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                            Vishwabharti Annual Ceremony & Gathering
+                        </h2>
+                        <p class="text-xs sm:text-base text-slate-300 line-clamp-2 max-w-2xl">
+                            Celebrating student academic excellence, sports milestones, and technical achievements.
+                        </p>
+                    </div>
+                </div>
+            </article>
+            <!-- Default Slide 2 -->
+            <article onclick="openBannerModal('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=80', 'Sports Championship', 'Inter-College Sports Tournament', 'Annual inter-collegiate tournament covering cricket, badminton, volleyball, athletics, and chess.')"
+                     class="w-full h-full flex-shrink-0 relative cursor-pointer overflow-hidden group/slide"
+                     tabindex="0"
+                     role="button">
+                <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=80" alt="Sports Tournament" class="w-full h-full object-cover transform scale-100 group-hover/slide:scale-105 transition-transform duration-1000 ease-out">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-6 sm:p-12 flex flex-col justify-end">
+                    <div class="max-w-3xl space-y-2.5">
+                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-400 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-lg">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse"></span>
+                            Athletics Meet
+                        </span>
+                        <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                            Inter-College Sports Tournament
+                        </h2>
+                        <p class="text-xs sm:text-base text-slate-300 line-clamp-2 max-w-2xl">
+                            Annual inter-collegiate tournament covering cricket, badminton, volleyball, athletics, and chess.
+                        </p>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
         </div>
 
-        <div class="flex-grow text-center md:text-left space-y-1">
-            <h1 class="text-2xl font-black text-slate-900">{{ profile.user.get_full_name }}</h1>
-            <p class="text-xs font-mono font-bold text-brand-600">Student ID: {{ profile.student_id }}</p>
-            <p class="text-xs text-slate-500 font-medium">{{ profile.course }} | {{ profile.year }} (Div {{ profile.division }})</p>
-            <span class="inline-block mt-2 px-3 py-1 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold rounded-full uppercase tracking-wider">
-                Active Student
+        <!-- Slider Controls -->
+        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-10">
+            <button id="prev-slide" aria-label="Previous Slide" class="pointer-events-auto bg-slate-900/70 hover:bg-slate-900 text-white w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-md transition-all border border-white/10 shadow-xl hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <i class="fa-solid fa-chevron-left text-sm"></i>
+            </button>
+            <button id="next-slide" aria-label="Next Slide" class="pointer-events-auto bg-slate-900/70 hover:bg-slate-900 text-white w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-md transition-all border border-white/10 shadow-xl hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <i class="fa-solid fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Progress Indicator Dots -->
+        <div id="carousel-dots" class="absolute bottom-5 right-6 sm:right-10 flex items-center gap-2 z-10 bg-slate-950/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10"></div>
+    </section>
+
+    <!-- 2. Live Broadcast Announcement Ribbon -->
+    {% if latest_notice %}
+    <section class="bg-gradient-to-r from-brand-900 via-brand-700 to-brand-900 text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-brand-500/30 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5 overflow-hidden">
+            <span class="flex-shrink-0 w-9 h-9 rounded-xl bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent shadow-inner">
+                <i class="fa-solid fa-bullhorn text-sm animate-bounce"></i>
             </span>
+            <div class="min-w-0">
+                <span class="text-[10px] uppercase tracking-wider font-extrabold text-brand-accent block">
+                    Campus Broadcast &bull; {{ latest_notice.created_at|timesince }} ago
+                </span>
+                <p class="text-xs sm:text-sm font-semibold truncate text-white/95 mt-0.5">
+                    {{ latest_notice.notice_text }}
+                </p>
+            </div>
         </div>
-
-        <!-- Fix: Updated URL name to 'student_id_card' -->
-        <div>
-            <a href="{% url 'student_id_card' profile.student_id %}" target="_blank" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-3 rounded-xl text-xs transition shadow-md flex items-center gap-2">
-                <i class="fa-solid fa-id-card text-amber-400"></i>
-                <span>View Digital ID Pass</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- Quick Stats & Info Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 text-center">
-            <span class="text-xs text-slate-400 font-bold block uppercase">Roll Number</span>
-            <span class="text-xl font-black text-slate-900 mt-1 block">{{ profile.roll_number|default:"-" }}</span>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 text-center">
-            <span class="text-xs text-slate-400 font-bold block uppercase">Department</span>
-            <span class="text-sm font-bold text-slate-800 mt-1 block">{{ profile.department|default:profile.course }}</span>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 text-center">
-            <span class="text-xs text-slate-400 font-bold block uppercase">Date of Birth</span>
-            <span class="text-sm font-bold text-slate-800 mt-1 block">{{ profile.dob|default:"Not Provided" }}</span>
-        </div>
-    </div>
-
-    {% else %}
-    <!-- Fallback if No Profile Attached -->
-    <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-3">
-        <i class="fa-solid fa-user-lock text-4xl text-slate-300 block"></i>
-        <h3 class="text-base font-bold text-slate-700">No Student Profile Linked</h3>
-        <p class="text-xs text-slate-400">Please contact college admin to map your account with Student Profile.</p>
-    </div>
+        <span class="hidden md:inline-flex px-3 py-1 bg-black/30 rounded-lg text-[10px] font-mono text-slate-300 whitespace-nowrap border border-white/5">
+            24h Active
+        </span>
+    </section>
     {% endif %}
 
+    <!-- 3. Student Identification Banner & Quick Metrics -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Identity Summary Card -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-800/90 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden backdrop-blur-md">
+            <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-brand-500/5 dark:bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Avatar -->
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center font-black text-3xl sm:text-4xl border-2 border-brand-200 dark:border-slate-600 shadow-md flex-shrink-0 overflow-hidden ring-4 ring-brand-500/10">
+                {% if student.photo %}
+                <img src="{{ student.photo.url }}" alt="{{ student.user.get_full_name }}" class="w-full h-full object-cover">
+                {% else %}
+                {{ student.user.first_name|first }}{{ student.user.last_name|first }}
+                {% endif %}
+            </div>
+
+            <div class="text-center sm:text-left flex-1 space-y-2">
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold inline-flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Active Enrolled
+                    </span>
+                    <button onclick="copyStudentId('{{ student.student_id }}')" title="Click to copy ID" class="group font-mono text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-0.5 rounded-full hover:bg-brand-50 hover:text-brand-600 transition flex items-center gap-1">
+                        <span>ID: {{ student.student_id }}</span>
+                        <i class="fa-regular fa-copy opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                    </button>
+                </div>
+
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                    {{ student.user.first_name }} {{ student.user.last_name }}
+                </h1>
+                
+                <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {{ student.course }} &bull; {{ student.year }} &bull; Division {{ student.division }} (Roll: {{ student.roll_number|default:"N/A" }})
+                </p>
+
+                <div class="pt-2 flex flex-wrap gap-2.5 justify-center sm:justify-start">
+                    <a href="{% url 'student_pass' student.id %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-900/10 transition active:scale-95">
+                        <i class="fa-solid fa-id-card text-brand-accent"></i> Digital Identity Pass
+                    </a>
+                    <a href="{% url 'edit_my_profile' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs transition active:scale-95">
+                        <i class="fa-solid fa-gear"></i> Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Snapshot Stats -->
+        <div class="grid grid-cols-2 gap-3.5">
+            <div class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between hover:border-brand-500/40 transition">
+                <span class="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider block">Events Enrolled</span>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ registered_events.count|default:"0" }}</span>
+                    <span class="text-xs text-slate-400 font-semibold">total</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div class="bg-amber-400 h-full rounded-full" style="width: 75%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between hover:border-brand-500/40 transition">
+                <span class="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider block">Certificates</span>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ certificates_count|default:"0" }}</span>
+                    <span class="text-xs text-slate-400 font-semibold">verified</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div class="bg-emerald-500 h-full rounded-full" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="col-span-2 bg-gradient-to-br from-brand-900 to-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-sm border border-brand-700/40 flex items-center justify-between">
+                <div>
+                    <span class="text-brand-accent text-[10px] font-mono uppercase tracking-wider font-bold block">Attendance Summary</span>
+                    <span class="text-2xl font-black text-white mt-0.5 block">{{ total_attendance|default:"0" }} check-ins recorded</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-brand-accent text-xl shadow-inner">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Quick Services Hub -->
+    <section class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                <i class="fa-solid fa-shapes text-brand-600 dark:text-brand-accent"></i> Core Portal Services
+            </h2>
+            <span class="text-xs text-slate-400 font-medium">Quick Access</span>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="{% url 'student_pass' student.id %}" class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-accent transition-colors">Gate Pass QR</h3>
+                    <p class="text-[11px] text-slate-400 mt-1">Instant campus check-in code</p>
+                </div>
+                <span class="text-brand-600 dark:text-brand-accent text-[11px] font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Open Pass <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </span>
+            </a>
+
+            <a href="{% url 'event_list' %}" class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-slate-700 text-amber-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-amber-500 transition-colors">Campus Events</h3>
+                    <p class="text-[11px] text-slate-400 mt-1">Register for gatherings & sports</p>
+                </div>
+                <span class="text-amber-500 text-[11px] font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Browse Events <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </span>
+            </a>
+
+            <a href="{% url 'certificate_list' %}" class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-slate-700 text-emerald-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-500 transition-colors">Credentials</h3>
+                    <p class="text-[11px] text-slate-400 mt-1">Download official certificates</p>
+                </div>
+                <span class="text-emerald-500 text-[11px] font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    View Records <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </span>
+            </a>
+
+            <a href="{% url 'edit_my_profile' %}" class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-slate-700 text-indigo-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-500 transition-colors">Update Profile</h3>
+                    <p class="text-[11px] text-slate-400 mt-1">Manage photo & contact details</p>
+                </div>
+                <span class="text-indigo-500 text-[11px] font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Edit Info <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </span>
+            </a>
+        </div>
+    </section>
+
 </div>
+
+<!-- 5. Banner Presentation Modal Dialog -->
+<div id="banner-modal" 
+     class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6" 
+     role="dialog" 
+     aria-modal="true"
+     aria-labelledby="modal-title">
+    <div id="banner-modal-box" class="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-200/80 dark:border-slate-800 transform transition-all duration-300 scale-95 flex flex-col max-h-[90vh]">
+        
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+            <span id="modal-badge" class="px-3 py-1 rounded-full bg-brand-accent text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-sm">
+                Event Detail
+            </span>
+            <button onclick="closeBannerModal()" aria-label="Close dialog" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 hover:bg-slate-300 dark:hover:bg-slate-700 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <!-- High-Resolution Image Canvas -->
+        <div class="w-full bg-slate-950 overflow-hidden flex items-center justify-center border-b border-slate-100 dark:border-slate-800">
+            <img id="modal-image" src="" alt="Banner Showcase" class="w-full max-h-80 sm:max-h-[380px] object-contain">
+        </div>
+
+        <!-- Descriptive Metadata -->
+        <div class="p-6 sm:p-8 overflow-y-auto space-y-3">
+            <h2 id="modal-title" class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-snug"></h2>
+            <p id="modal-subtitle" class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed"></p>
+        </div>
+
+        <!-- Dialog Footer -->
+        <div class="bg-slate-50 dark:bg-slate-900 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <button onclick="closeBannerModal()" class="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-xs transition">
+                Close Preview
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Slider & Modal Control -->
+<script>
+    (function () {
+        const carousel = document.getElementById('event-carousel');
+        const prevBtn = document.getElementById('prev-slide');
+        const nextBtn = document.getElementById('next-slide');
+        const dotsContainer = document.getElementById('carousel-dots');
+        
+        if (!carousel) return;
+
+        const totalSlides = carousel.children.length;
+        let currentIndex = 0;
+        let autoSlideTimer = null;
+        let startX = 0;
+        let isSwiping = false;
+
+        // Build navigation dots
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('button');
+            dot.setAttribute('aria-label', `Navigate to slide ${i + 1}`);
+            dot.className = i === 0 
+                ? 'dot w-5 h-1.5 rounded-full bg-white transition-all duration-300' 
+                : 'dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300';
+            dot.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentIndex = i;
+                updateCarousel();
+                restartAutoSlide();
+            });
+            dotsContainer.appendChild(dot);
+        }
+        const dots = dotsContainer.querySelectorAll('.dot');
+
+        function updateCarousel() {
+            carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+            dots.forEach((dot, idx) => {
+                if (idx === currentIndex) {
+                    dot.className = 'dot w-5 h-1.5 rounded-full bg-white transition-all duration-300';
+                } else {
+                    dot.className = 'dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300';
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % totalSlides;
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+
+        function restartAutoSlide() {
+            clearInterval(autoSlideTimer);
+            if (totalSlides > 1) {
+                autoSlideTimer = setInterval(nextSlide, 5000);
+            }
+        }
+
+        // Pause auto-sliding on hover
+        carousel.parentElement.addEventListener('mouseenter', () => clearInterval(autoSlideTimer));
+        carousel.parentElement.addEventListener('mouseleave', restartAutoSlide);
+
+        // Mobile touch swipe gestures
+        carousel.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isSwiping = true;
+            clearInterval(autoSlideTimer);
+        }, { passive: true });
+
+        carousel.addEventListener('touchend', (e) => {
+            if (!isSwiping) return;
+            const diffX = startX - e.changedTouches[0].clientX;
+            if (Math.abs(diffX) > 40) {
+                if (diffX > 0) nextSlide();
+                else prevSlide();
+            }
+            isSwiping = false;
+            restartAutoSlide();
+        }, { passive: true });
+
+        if (totalSlides > 1) {
+            nextBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                nextSlide();
+                restartAutoSlide();
+            });
+
+            prevBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                prevSlide();
+                restartAutoSlide();
+            });
+
+            restartAutoSlide();
+        }
+
+        // Copy Student ID Helper
+        window.copyStudentId = function(id) {
+            navigator.clipboard.writeText(id).then(() => {
+                if (window.showToast) {
+                    showToast('success', 'Student ID copied to clipboard!');
+                }
+            });
+        };
+
+        // Modal Functionality with background scroll locking
+        window.openBannerModal = function (imageUrl, badge, title, subtitle) {
+            document.getElementById('modal-image').src = imageUrl;
+            document.getElementById('modal-badge').innerText = badge || 'Event';
+            document.getElementById('modal-title').innerText = title;
+            
+            const subtitleEl = document.getElementById('modal-subtitle');
+            if (subtitle && subtitle.trim() !== '') {
+                subtitleEl.innerText = subtitle;
+                subtitleEl.classList.remove('hidden');
+            } else {
+                subtitleEl.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('banner-modal');
+            const box = document.getElementById('banner-modal-box');
+            document.body.style.overflow = 'hidden';
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+            }, 10);
+        };
+
+        window.closeBannerModal = function () {
+            const modal = document.getElementById('banner-modal');
+            const box = document.getElementById('banner-modal-box');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        };
+
+        document.getElementById('banner-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBannerModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeBannerModal();
+            }
+        });
+    })();
+</script>
 {% endblock %}

@@ -221,7 +221,7 @@ Vishwabharti Mahavidyalaya, CIDCO, Nanded
 
 
 # ----------------------------------------------------
-# 3. UPDATE: Edit Student Details (Admin Only)
+# 3. UPDATE: Edit Student Details (Admin Only + Photo Deletion)
 # ----------------------------------------------------
 @login_required
 def edit_student(request, student_id):
@@ -260,8 +260,24 @@ def edit_student(request, student_id):
     dob = request.POST.get('dob', '').strip()
     student.dob = dob if dob else None
 
-    if request.FILES.get('photo'):
-      student.photo = request.FILES.get('photo')
+    # 📸 Robust Photo Handling: Delete old, upload new, or clear
+    delete_photo = request.POST.get('delete_photo') == 'true'
+    new_photo = request.FILES.get('photo')
+
+    if new_photo:
+      if student.photo:
+        try:
+          student.photo.delete(save=False)
+        except Exception:
+          pass
+      student.photo = new_photo
+    elif delete_photo:
+      if student.photo:
+        try:
+          student.photo.delete(save=False)
+        except Exception:
+          pass
+      student.photo = ''
 
     student.save()
 
@@ -440,7 +456,7 @@ def export_students_excel(request):
 
 
 # ----------------------------------------------------
-# 6. STUDENT SELF-SERVICE: Profile View & Edit
+# 6. STUDENT SELF-SERVICE: Profile View & Edit (With Photo Deletion)
 # ----------------------------------------------------
 @login_required
 def student_profile_view(request):
@@ -461,8 +477,24 @@ def edit_my_profile(request):
     dob = request.POST.get('dob', '').strip()
     student.dob = dob if dob else None
 
-    if request.FILES.get('photo'):
-      student.photo = request.FILES.get('photo')
+    # 📸 Photo Upload / Deletion logic for student self-service
+    delete_photo = request.POST.get('delete_photo') == 'true'
+    new_photo = request.FILES.get('photo')
+
+    if new_photo:
+      if student.photo:
+        try:
+          student.photo.delete(save=False)
+        except Exception:
+          pass
+      student.photo = new_photo
+    elif delete_photo:
+      if student.photo:
+        try:
+          student.photo.delete(save=False)
+        except Exception:
+          pass
+      student.photo = ''
 
     student.save()
 
