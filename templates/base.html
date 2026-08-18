@@ -193,11 +193,6 @@
                     <span>+ Post Announcement</span>
                 </a>
 
-                <a href="{% url 'scan_attendance' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'scan_attendance' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
-                    <i class="fa-solid fa-qrcode w-5 {% if current_url == 'scan_attendance' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
-                    <span>Event Attendance</span>
-                </a>
-
                 <!-- 3. STUDENT SELF-SERVICE SECTION -->
                 {% elif user.is_student or user.student_profile %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Student Portal</div>

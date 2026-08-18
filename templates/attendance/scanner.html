@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Scan QR Attendance | Vishwabharti Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="text-[11px] font-extrabold text-brand-600 dark:text-brand-accent uppercase tracking-wider">Live Check-in Engine</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
+                Event QR Code Scanner 📷
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Point the camera at student digital passes to log real-time attendance.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span id="scan-counter" class="px-4 py-2 bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent rounded-2xl font-mono text-xs font-bold border border-brand-100 dark:border-slate-600">
+                Scanned: 0
+            </span>
+        </div>
+    </div>
+
+    <!-- Scanner Box & Status Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- 1. Interactive Camera Viewport -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col items-center">
+            
+            <div class="w-full relative rounded-2xl overflow-hidden bg-slate-950 aspect-square max-h-[380px] flex items-center justify-center border border-slate-800 shadow-inner">
+                <div id="qr-reader" class="w-full h-full"></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center gap-3 mt-4 w-full justify-center">
+                <button id="toggle-camera-btn" onclick="toggleCamera()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md">
+                    <i class="fa-solid fa-camera-rotate"></i> Switch Camera
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. Recent Scan Activity Log -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col">
+            <h2 class="text-sm font-black text-slate-900 dark:text-slate-100 flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3 mb-3">
+                <span>Recent Check-ins</span>
+                <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
+            </h2>
+
+            <div id="scan-history" class="space-y-2.5 overflow-y-auto max-h-[320px] flex-1 text-xs">
+                <p id="empty-history-msg" class="text-center text-slate-400 py-8 text-xs">
+                    No scans recorded in this session yet.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- html5-qrcode Library CDN -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+    let html5QrCode = null;
+    let currentCameraFacing = "environment";
+    let isProcessing = false;
+    let scanCount = 0;
+
+    function startScanner() {
+        html5QrCode = new Html5Qrcode("qr-reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        html5QrCode.start(
+            { facingMode: currentCameraFacing },
+            config,
+            onScanSuccess,
+            (errorMessage) => { /* ignore frame scan errors */ }
+        ).catch(err => {
+            console.error("Camera access failed:", err);
+            if (window.showToast) {
+                showToast("error", "Unable to access camera. Check device permissions.");
+            }
+        });
+    }
+
+    function toggleCamera() {
+        if (!html5QrCode) return;
+        html5QrCode.stop().then(() => {
+            currentCameraFacing = currentCameraFacing === "environment" ? "user" : "environment";
+            startScanner();
+        }).catch(err => console.error(err));
+    }
+
+    function onScanSuccess(decodedText) {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        // Visual / Audio feedback
+        if (navigator.vibrate) navigator.vibrate(100);
+
+        // POST request to record attendance
+        fetch("{% url 'scan_attendance' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({ qr_data: decodedText })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                scanCount++;
+                document.getElementById("scan-counter").innerText = `Scanned: ${scanCount}`;
+                
+                if (window.showToast) {
+                    showToast("success", data.message || "Attendance marked successfully!");
+                }
+                addToHistory(data.student_name || decodedText, "Verified", true);
+            } else if (data.status === "warning") {
+                if (window.showToast) {
+                    showToast("warning", data.message || "Attendance already recorded.");
+                }
+                addToHistory(data.student_name || decodedText, "Already Marked", false);
+            } else {
+                if (window.showToast) {
+                    showToast("error", data.message || "Invalid QR Code format.");
+                }
+            }
+        })
+        .catch(err => {
+            if (window.showToast) {
+                showToast("error", "Server communication error.");
+            }
+        })
+        .finally(() => {
+            setTimeout(() => {
+                isProcessing = false;
+            }, 1800);
+        });
+    }
+
+    function addToHistory(title, status, isSuccess) {
+        const historyContainer = document.getElementById("scan-history");
+        const emptyMsg = document.getElementById("empty-history-msg");
+        if (emptyMsg) emptyMsg.remove();
+
+        const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        const card = document.createElement("div");
+        card.className = `p-3 rounded-2xl border flex items-center justify-between transition-all ${
+            isSuccess 
+                ? "bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200" 
+                : "bg-amber-50/70 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+        }`;
+        
+        card.innerHTML = `
+            <div class="truncate">
+                <span class="font-bold block truncate">${title}</span>
+                <span class="text-[10px] text-slate-400 font-mono">${timeString}</span>
+            </div>
+            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                isSuccess ? "bg-emerald-200 dark:bg-emerald-800" : "bg-amber-200 dark:bg-amber-800"
+            }">${status}</span>
+        `;
+
+        historyContainer.prepend(card);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        startScanner();
+    });
+</script>
+{% endblock %}
