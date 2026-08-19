@@ -4,38 +4,38 @@
 {% block title %}Dashboard | Vishwabharti Portal{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-8 pb-12 font-sans">
+<div class="max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-12 font-sans">
 
     <!-- 1. Hero Dynamic Carousel -->
-    <section class="relative bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80 group select-none" aria-label="Campus Highlights">
+    <section class="relative bg-slate-950 rounded-3xl overflow-hidden shadow-xl border border-slate-800/80 group select-none" aria-label="Campus Highlights">
         
         <!-- Slider Track -->
-        <div id="event-carousel" class="relative w-full h-80 sm:h-[480px] flex transition-transform duration-700 cubic-bezier(0.25, 1, 0.5, 1)">
+        <div id="event-carousel" class="relative w-full h-72 sm:h-96 md:h-[440px] flex transition-transform duration-700 cubic-bezier(0.25, 1, 0.5, 1)">
             {% for banner in banners %}
             <article onclick="openBannerModal('{{ banner.image.url }}', '{{ banner.badge_text|default:'Campus Event'|escapejs }}', '{{ banner.title|escapejs }}', '{{ banner.subtitle|default:''|escapejs }}')" 
-                     class="w-full h-full flex-shrink-0 relative cursor-pointer overflow-hidden group/slide focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
+                     class="w-full h-full flex-shrink-0 relative cursor-pointer overflow-hidden group/slide focus:outline-none"
                      tabindex="0"
                      role="button"
-                     aria-label="View banner details: {{ banner.title }}">
+                     aria-label="View banner: {{ banner.title }}">
                 <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="w-full h-full object-cover transform scale-100 group-hover/slide:scale-105 transition-transform duration-1000 ease-out">
                 
                 <!-- Ambient Gradient Layer -->
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent p-6 sm:p-12 flex flex-col justify-end">
-                    <div class="max-w-3xl space-y-3">
-                        <div class="flex items-center gap-3">
-                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-accent text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-lg">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent p-5 sm:p-10 flex flex-col justify-end">
+                    <div class="max-w-2xl space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-brand-accent text-slate-950 font-black text-[10px] sm:text-xs uppercase tracking-wider shadow">
                                 <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse"></span>
                                 {{ banner.badge_text|default:"Campus Event" }}
                             </span>
-                            <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs font-semibold border border-white/10">
-                                <i class="fa-solid fa-expand text-[10px]"></i> Quick Preview
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 backdrop-blur-md text-white/90 text-[10px] font-semibold">
+                                <i class="fa-solid fa-expand text-[9px]"></i> Preview
                             </span>
                         </div>
-                        <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight group-hover/slide:text-brand-accent transition-colors drop-shadow-md">
+                        <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight group-hover/slide:text-brand-accent transition-colors drop-shadow-md">
                             {{ banner.title }}
                         </h2>
                         {% if banner.subtitle %}
-                        <p class="text-xs sm:text-base text-slate-300 line-clamp-2 max-w-2xl font-normal leading-relaxed drop-shadow">
+                        <p class="text-xs sm:text-sm text-slate-300 line-clamp-2 max-w-xl font-normal leading-relaxed">
                             {{ banner.subtitle }}
                         </p>
                         {% endif %}
@@ -43,44 +43,23 @@
                 </div>
             </article>
             {% empty %}
-            <!-- Default Fallback Slide 1 -->
-            <article onclick="openBannerModal('https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80', 'Annual Gathering', 'Vishwabharti Annual Ceremony & Gathering', 'Celebrating student academic excellence, sports milestones, and technical achievements.')"
+            <!-- Default Slide 1 -->
+            <article onclick="openBannerModal('https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80', 'Annual Gathering', 'Annual Cultural Gathering & Youth Fest', 'A look back at the vibrant performances, academic awards, and memorable moments.')"
                      class="w-full h-full flex-shrink-0 relative cursor-pointer overflow-hidden group/slide focus:outline-none"
                      tabindex="0"
                      role="button">
-                <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80" alt="Convocation Ceremony" class="w-full h-full object-cover transform scale-100 group-hover/slide:scale-105 transition-transform duration-1000 ease-out">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent p-6 sm:p-12 flex flex-col justify-end">
-                    <div class="max-w-3xl space-y-3">
-                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-accent text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-lg">
+                <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80" alt="Gathering" class="w-full h-full object-cover transform scale-100 group-hover/slide:scale-105 transition-transform duration-1000 ease-out">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent p-5 sm:p-10 flex flex-col justify-end">
+                    <div class="max-w-2xl space-y-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-brand-accent text-slate-950 font-black text-[10px] sm:text-xs uppercase tracking-wider shadow">
                             <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse"></span>
-                            Campus Event
+                            Gathering
                         </span>
-                        <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                            Vishwabharti Annual Ceremony & Gathering
+                        <h2 class="text-xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight">
+                            Annual Cultural Gathering & Youth Fest
                         </h2>
-                        <p class="text-xs sm:text-base text-slate-300 line-clamp-2 max-w-2xl">
-                            Celebrating student academic excellence, sports milestones, and technical achievements.
-                        </p>
-                    </div>
-                </div>
-            </article>
-            <!-- Default Fallback Slide 2 -->
-            <article onclick="openBannerModal('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=80', 'Sports Championship', 'Inter-College Sports Tournament', 'Annual inter-collegiate tournament covering cricket, badminton, volleyball, athletics, and chess.')"
-                     class="w-full h-full flex-shrink-0 relative cursor-pointer overflow-hidden group/slide focus:outline-none"
-                     tabindex="0"
-                     role="button">
-                <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=80" alt="Sports Tournament" class="w-full h-full object-cover transform scale-100 group-hover/slide:scale-105 transition-transform duration-1000 ease-out">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent p-6 sm:p-12 flex flex-col justify-end">
-                    <div class="max-w-3xl space-y-3">
-                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-400 text-slate-950 font-black text-[11px] uppercase tracking-wider shadow-lg">
-                            <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse"></span>
-                            Athletics Meet
-                        </span>
-                        <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                            Inter-College Sports Tournament
-                        </h2>
-                        <p class="text-xs sm:text-base text-slate-300 line-clamp-2 max-w-2xl">
-                            Annual inter-collegiate tournament covering cricket, badminton, volleyball, athletics, and chess.
+                        <p class="text-xs sm:text-sm text-slate-300 line-clamp-2 max-w-xl">
+                            A look back at the vibrant performances, academic awards, and memorable moments.
                         </p>
                     </div>
                 </div>
@@ -88,29 +67,29 @@
             {% endfor %}
         </div>
 
-        <!-- Slider Controls -->
-        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-10">
-            <button id="prev-slide" aria-label="Previous Slide" class="pointer-events-auto bg-slate-900/70 hover:bg-slate-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-md transition-all border border-white/10 shadow-xl hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-accent">
-                <i class="fa-solid fa-chevron-left text-sm"></i>
+        <!-- Desktop Navigation Arrows (Hidden on Mobile to Prevent Text Overlap) -->
+        <div class="hidden sm:flex absolute inset-x-4 top-1/2 -translate-y-1/2 justify-between pointer-events-none z-10">
+            <button id="prev-slide" aria-label="Previous Slide" class="pointer-events-auto bg-slate-900/60 hover:bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition border border-white/10 shadow-lg hover:scale-105 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
             </button>
-            <button id="next-slide" aria-label="Next Slide" class="pointer-events-auto bg-slate-900/70 hover:bg-slate-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-md transition-all border border-white/10 shadow-xl hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-accent">
-                <i class="fa-solid fa-chevron-right text-sm"></i>
+            <button id="next-slide" aria-label="Next Slide" class="pointer-events-auto bg-slate-900/60 hover:bg-slate-900 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition border border-white/10 shadow-lg hover:scale-105 active:scale-95 focus:outline-none">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
             </button>
         </div>
 
-        <!-- Progress Indicator Dots -->
-        <div id="carousel-dots" class="absolute bottom-6 right-6 sm:right-10 flex items-center gap-2 z-10 bg-slate-950/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/10"></div>
+        <!-- Navigation Dots -->
+        <div id="carousel-dots" class="absolute bottom-4 right-4 sm:right-8 flex items-center gap-1.5 z-10 bg-slate-950/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10"></div>
     </section>
 
-    <!-- 2. Live Broadcast Announcement Ribbon -->
+    <!-- 2. Live Broadcast Ribbon -->
     {% if latest_notice %}
-    <section class="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 text-white p-4 sm:p-5 rounded-3xl shadow-lg border border-brand-500/30 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3.5 overflow-hidden">
-            <span class="flex-shrink-0 w-10 h-10 rounded-2xl bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent shadow-inner">
-                <i class="fa-solid fa-bullhorn text-sm animate-bounce"></i>
+    <section class="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-800 text-white p-4 rounded-2xl shadow-md border border-brand-500/30 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 overflow-hidden">
+            <span class="flex-shrink-0 w-8 h-8 rounded-xl bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent">
+                <i class="fa-solid fa-bullhorn text-xs animate-bounce"></i>
             </span>
             <div class="min-w-0">
-                <span class="text-[10px] uppercase tracking-widest font-black text-brand-accent block">
+                <span class="text-[9px] uppercase tracking-wider font-black text-brand-accent block">
                     Campus Broadcast &bull; {{ latest_notice.created_at|timesince }} ago
                 </span>
                 <p class="text-xs sm:text-sm font-semibold truncate text-white/95 mt-0.5">
@@ -118,90 +97,93 @@
                 </p>
             </div>
         </div>
-        <span class="hidden md:inline-flex px-3 py-1 bg-black/30 rounded-xl text-[10px] font-mono font-bold text-slate-300 whitespace-nowrap border border-white/5">
-            24h Bulletin
+        <span class="hidden sm:inline-flex px-2.5 py-0.5 bg-black/30 rounded-lg text-[10px] font-mono text-slate-300 whitespace-nowrap">
+            Active
         </span>
     </section>
     {% endif %}
 
-    <!-- 3. Student Identification Banner & Quick Metrics -->
+    <!-- 3. Student Identification Card & Overview Stats -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Identity Summary Card (8 cols) -->
-        <div class="lg:col-span-8 bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden backdrop-blur-md">
-            <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-brand-500/5 dark:bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- Modern Horizontal Student Identity Card (8 cols) -->
+        <div class="lg:col-span-8 bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-slate-700/80 shadow-sm relative overflow-hidden backdrop-blur-md flex flex-col justify-between">
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-500/5 dark:bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-            <!-- Avatar Thumbnail -->
-            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center font-black text-3xl sm:text-4xl border-2 border-brand-200 dark:border-slate-600 shadow-md flex-shrink-0 overflow-hidden ring-4 ring-brand-500/10">
-                {% if student.photo %}
-                <img src="{{ student.photo.url }}" alt="{{ student.user.get_full_name }}" class="w-full h-full object-cover">
-                {% else %}
-                {{ student.user.first_name|first }}{{ student.user.last_name|first }}
-                {% endif %}
+            <div class="flex items-start sm:items-center gap-4 sm:gap-6">
+                <!-- Avatar -->
+                <div class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center font-black text-xl sm:text-3xl border-2 border-brand-200 dark:border-slate-600 shadow flex-shrink-0 overflow-hidden ring-4 ring-brand-500/10">
+                    {% if student.photo %}
+                    <img src="{{ student.photo.url }}" alt="{{ student.user.get_full_name }}" class="w-full h-full object-cover">
+                    {% else %}
+                    {{ student.user.first_name|first }}{{ student.user.last_name|first }}
+                    {% endif %}
+                </div>
+
+                <!-- Info Details -->
+                <div class="min-w-0 flex-1 space-y-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold inline-flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active
+                        </span>
+                        <button onclick="copyStudentId('{{ student.student_id }}')" type="button" class="font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-0.5 rounded-full hover:text-brand-600 transition flex items-center gap-1">
+                            <span>ID: {{ student.student_id }}</span>
+                            <i class="fa-regular fa-copy text-[9px]"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-slate-100 truncate tracking-tight">
+                        {{ student.user.first_name }} {{ student.user.last_name }}
+                    </h1>
+                    
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {{ student.course }} &bull; {{ student.year }} &bull; Div {{ student.division }} (Roll: <span class="font-bold text-slate-700 dark:text-slate-300">{{ student.roll_number|default:"N/A" }}</span>)
+                    </p>
+                </div>
             </div>
 
-            <!-- Bio Info -->
-            <div class="text-center sm:text-left flex-1 space-y-2">
-                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                    <span class="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[11px] font-extrabold inline-flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Active Student
-                    </span>
-                    <button onclick="copyStudentId('{{ student.student_id }}')" type="button" title="Click to copy Student ID" class="group font-mono text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/70 px-3 py-1 rounded-full hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-slate-700 dark:hover:text-brand-accent transition flex items-center gap-1.5 cursor-pointer">
-                        <span>ID: {{ student.student_id }}</span>
-                        <i class="fa-regular fa-copy opacity-60 group-hover:opacity-100 transition-opacity"></i>
-                    </button>
-                </div>
-
-                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                    {{ student.user.first_name }} {{ student.user.last_name }}
-                </h1>
-                
-                <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {{ student.course }} &bull; {{ student.year }} &bull; Division {{ student.division }} (Roll No: <span class="font-bold text-slate-700 dark:text-slate-300">{{ student.roll_number|default:"N/A" }}</span>)
-                </p>
-
-                <div class="pt-3 flex flex-wrap gap-2.5 justify-center sm:justify-start">
-                    <a href="{% url 'student_pass' student.id %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-900/10 transition-all hover:shadow-lg active:scale-95">
-                        <i class="fa-solid fa-id-card text-brand-accent"></i> Digital Pass
-                    </a>
-                    <a href="{% url 'edit_my_profile' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs transition active:scale-95">
-                        <i class="fa-solid fa-user-gear"></i> Settings
-                    </a>
-                </div>
+            <!-- Action Buttons Footer -->
+            <div class="pt-5 mt-5 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-3">
+                <a href="{% url 'student_pass' student.id %}" class="flex-1 sm:flex-initial inline-flex justify-center items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-sm transition active:scale-95">
+                    <i class="fa-solid fa-id-card text-brand-accent"></i> Digital Pass
+                </a>
+                <a href="{% url 'edit_my_profile' %}" class="flex-1 sm:flex-initial inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs transition active:scale-95">
+                    <i class="fa-solid fa-user-gear"></i> Settings
+                </a>
             </div>
         </div>
 
         <!-- Academic Snapshot Stats (4 cols) -->
-        <div class="lg:col-span-4 grid grid-cols-2 gap-3.5">
-            <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between hover:border-brand-500/40 transition">
-                <span class="text-slate-400 dark:text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider block">Events Enrolled</span>
-                <div class="flex items-baseline gap-2 mt-2">
-                    <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ registered_events|length }}</span>
-                    <span class="text-xs text-slate-400 font-medium">total</span>
+        <div class="lg:col-span-4 grid grid-cols-2 gap-4">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between">
+                <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Events Enrolled</span>
+                <div class="flex items-baseline gap-1.5 my-2">
+                    <span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">{{ registered_events|length }}</span>
+                    <span class="text-[10px] text-slate-400 font-medium">total</span>
                 </div>
-                <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden">
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                     <div class="bg-amber-400 h-full rounded-full" style="width: 75%"></div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between hover:border-brand-500/40 transition">
-                <span class="text-slate-400 dark:text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider block">Certificates</span>
-                <div class="flex items-baseline gap-2 mt-2">
-                    <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ certificates_count|default:"0" }}</span>
-                    <span class="text-xs text-slate-400 font-medium">verified</span>
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between">
+                <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Certificates</span>
+                <div class="flex items-baseline gap-1.5 my-2">
+                    <span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">{{ certificates_count|default:"0" }}</span>
+                    <span class="text-[10px] text-slate-400 font-medium">verified</span>
                 </div>
-                <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden">
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                     <div class="bg-emerald-500 h-full rounded-full" style="width: 100%"></div>
                 </div>
             </div>
 
             <!-- Attendance Summary Box -->
-            <div class="col-span-2 bg-gradient-to-br from-brand-800 via-brand-700 to-slate-900 text-white rounded-3xl p-5 shadow-md border border-brand-700/60 flex items-center justify-between">
+            <div class="col-span-2 bg-gradient-to-br from-brand-800 via-brand-700 to-slate-900 text-white rounded-3xl p-4 sm:p-5 shadow-md border border-brand-700/60 flex items-center justify-between">
                 <div>
-                    <span class="text-brand-accent text-[10px] sm:text-xs font-mono uppercase tracking-wider font-extrabold block">Attendance Log</span>
-                    <span class="text-2xl sm:text-3xl font-black text-white mt-1 block">{{ total_attendance|default:"0" }} check-ins recorded</span>
+                    <span class="text-brand-accent text-[10px] font-mono uppercase tracking-wider font-extrabold block">Attendance Summary</span>
+                    <span class="text-xl sm:text-2xl font-black text-white mt-1 block">{{ total_attendance|default:"0" }} check-ins recorded</span>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-brand-accent text-xl shadow-inner border border-white/10 flex-shrink-0">
+                <div class="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-brand-accent text-lg border border-white/10 flex-shrink-0">
                     <i class="fa-solid fa-clipboard-check"></i>
                 </div>
             </div>
@@ -209,65 +191,62 @@
     </section>
 
     <!-- 4. Quick Services Hub -->
-    <section class="space-y-4">
-        <div class="flex items-center justify-between">
-            <h2 class="text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                <i class="fa-solid fa-shapes text-brand-600 dark:text-brand-accent"></i> Core Portal Services
-            </h2>
-            <span class="text-xs text-slate-400 font-medium">Quick Access Hub</span>
-        </div>
+    <section class="space-y-3">
+        <h2 class="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+            <i class="fa-solid fa-shapes text-brand-600 dark:text-brand-accent"></i> Core Portal Services
+        </h2>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
             
-            <a href="{% url 'student_pass' student.id %}" class="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+            <a href="{% url 'student_pass' student.id %}" class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col justify-between">
                 <div>
-                    <div class="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-accent flex items-center justify-center text-lg sm:text-xl mb-3 group-hover:scale-110 transition-transform">
                         <i class="fa-solid fa-qrcode"></i>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-accent transition-colors">Gate Pass QR</h3>
-                    <p class="text-xs text-slate-400 mt-1">Instant campus entry pass</p>
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-accent transition-colors">Gate Pass QR</h3>
+                    <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Instant campus entry code</p>
                 </div>
-                <span class="text-brand-600 dark:text-brand-accent text-xs font-bold mt-5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Open Pass <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span class="text-brand-600 dark:text-brand-accent text-[11px] font-bold mt-3 hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Open Pass <i class="fa-solid fa-arrow-right text-[9px]"></i>
                 </span>
             </a>
 
-            <a href="{% url 'event_list' %}" class="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+            <a href="{% url 'event_list' %}" class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col justify-between">
                 <div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-slate-700 text-amber-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 dark:bg-slate-700 text-amber-500 flex items-center justify-center text-lg sm:text-xl mb-3 group-hover:scale-110 transition-transform">
                         <i class="fa-solid fa-trophy"></i>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-amber-500 transition-colors">Campus Events</h3>
-                    <p class="text-xs text-slate-400 mt-1">Participate in tournaments & expo</p>
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-amber-500 transition-colors">Campus Events</h3>
+                    <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Tournaments & expo</p>
                 </div>
-                <span class="text-amber-500 text-xs font-bold mt-5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Browse Events <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span class="text-amber-500 text-[11px] font-bold mt-3 hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Browse Events <i class="fa-solid fa-arrow-right text-[9px]"></i>
                 </span>
             </a>
 
-            <a href="{% url 'certificate_list' %}" class="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+            <a href="{% url 'certificate_list' %}" class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col justify-between">
                 <div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-slate-700 text-emerald-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-50 dark:bg-slate-700 text-emerald-500 flex items-center justify-center text-lg sm:text-xl mb-3 group-hover:scale-110 transition-transform">
                         <i class="fa-solid fa-award"></i>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-500 transition-colors">Credentials</h3>
-                    <p class="text-xs text-slate-400 mt-1">Download official e-certificates</p>
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-500 transition-colors">Credentials</h3>
+                    <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Download certificates</p>
                 </div>
-                <span class="text-emerald-500 text-xs font-bold mt-5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    View Records <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span class="text-emerald-500 text-[11px] font-bold mt-3 hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    View Records <i class="fa-solid fa-arrow-right text-[9px]"></i>
                 </span>
             </a>
 
-            <a href="{% url 'edit_my_profile' %}" class="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between">
+            <a href="{% url 'edit_my_profile' %}" class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col justify-between">
                 <div>
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-slate-700 text-indigo-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 dark:bg-slate-700 text-indigo-500 flex items-center justify-center text-lg sm:text-xl mb-3 group-hover:scale-110 transition-transform">
                         <i class="fa-solid fa-user-pen"></i>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-500 transition-colors">Update Profile</h3>
-                    <p class="text-xs text-slate-400 mt-1">Manage photo & personal info</p>
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-500 transition-colors">Update Profile</h3>
+                    <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Photo & personal info</p>
                 </div>
-                <span class="text-indigo-500 text-xs font-bold mt-5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Edit Details <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span class="text-indigo-500 text-[11px] font-bold mt-3 hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Edit Details <i class="fa-solid fa-arrow-right text-[9px]"></i>
                 </span>
             </a>
         </div>
@@ -285,28 +264,28 @@
         
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-            <span id="modal-badge" class="px-3.5 py-1 rounded-full bg-brand-accent text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-sm">
+            <span id="modal-badge" class="px-3 py-0.5 rounded-full bg-brand-accent text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-sm">
                 Event Detail
             </span>
-            <button onclick="closeBannerModal()" aria-label="Close dialog" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 hover:bg-slate-300 dark:hover:bg-slate-700 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-brand-accent cursor-pointer">
+            <button onclick="closeBannerModal()" aria-label="Close dialog" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 hover:bg-slate-300 dark:hover:bg-slate-700 flex items-center justify-center transition focus:outline-none">
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
         </div>
 
         <!-- Image Canvas -->
         <div class="w-full bg-slate-950 overflow-hidden flex items-center justify-center border-b border-slate-100 dark:border-slate-800">
-            <img id="modal-image" src="" alt="Banner Showcase" class="w-full max-h-80 sm:max-h-[380px] object-contain">
+            <img id="modal-image" src="" alt="Banner Showcase" class="w-full max-h-72 sm:max-h-[360px] object-contain">
         </div>
 
         <!-- Descriptive Metadata -->
-        <div class="p-6 sm:p-8 overflow-y-auto space-y-3">
-            <h2 id="modal-title" class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-snug"></h2>
+        <div class="p-5 sm:p-7 overflow-y-auto space-y-2">
+            <h2 id="modal-title" class="text-lg sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-snug"></h2>
             <p id="modal-subtitle" class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed"></p>
         </div>
 
         <!-- Dialog Footer -->
-        <div class="bg-slate-50 dark:bg-slate-900 px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-            <button onclick="closeBannerModal()" class="px-5 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-xs transition cursor-pointer">
+        <div class="bg-slate-50 dark:bg-slate-900 px-6 py-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <button onclick="closeBannerModal()" class="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-xs transition">
                 Close Preview
             </button>
         </div>
@@ -338,8 +317,8 @@
                 const dot = document.createElement('button');
                 dot.setAttribute('aria-label', `Navigate to slide ${i + 1}`);
                 dot.className = i === 0 
-                    ? 'dot w-5 h-1.5 rounded-full bg-white transition-all duration-300 cursor-pointer' 
-                    : 'dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300 cursor-pointer';
+                    ? 'dot w-4 h-1.5 rounded-full bg-white transition-all duration-300' 
+                    : 'dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300';
                 dot.addEventListener('click', (e) => {
                     e.stopPropagation();
                     currentIndex = i;
@@ -356,9 +335,9 @@
             if (dots.length > 0) {
                 dots.forEach((dot, idx) => {
                     if (idx === currentIndex) {
-                        dot.className = 'dot w-5 h-1.5 rounded-full bg-white transition-all duration-300 cursor-pointer';
+                        dot.className = 'dot w-4 h-1.5 rounded-full bg-white transition-all duration-300';
                     } else {
-                        dot.className = 'dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300 cursor-pointer';
+                        dot.className = 'dot w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/70 transition-all duration-300';
                     }
                 });
             }
@@ -387,7 +366,7 @@
             carousel.parentElement.addEventListener('mouseleave', restartAutoSlide);
         }
 
-        // Mobile touch swipe gestures
+        // Touch swipe gestures
         carousel.addEventListener('touchstart', (e) => {
             if (totalSlides <= 1) return;
             startX = e.touches[0].clientX;
@@ -432,7 +411,7 @@
             });
         };
 
-        // Modal Functionality with background scroll locking
+        // Modal Logic
         window.openBannerModal = function (imageUrl, badge, title, subtitle) {
             const modalImg = document.getElementById('modal-image');
             const modalBadge = document.getElementById('modal-badge');
