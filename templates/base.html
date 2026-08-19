@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50 light">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,13 +10,25 @@
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
 
+    <!-- Instant Dark Mode Initializer (Prevents Screen Flash) -->
+    <script>
+        (function() {
+            const savedMode = localStorage.getItem('app_theme_mode');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedMode === 'dark' || (!savedMode && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Theme & Tailwind Configuration -->
+    <!-- Tailwind Configuration -->
     <script>
-        const savedMode = localStorage.getItem('app_theme_mode') || 'light';
-
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -43,21 +55,13 @@
                 }
             }
         };
-
-        if (savedMode === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-        } else {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-        }
     </script>
     
     <!-- FontAwesome 6 Icons & Inter Font -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- SweetAlert2 CDN (Loaded in Head for immediate script access) -->
+    <!-- SweetAlert2 CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -108,7 +112,7 @@
         }
     </style>
 </head>
-<body class="h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-x-hidden transition-colors duration-300">
+<body class="min-h-full font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-x-hidden transition-colors duration-200">
 
     {% if user.is_authenticated %}
     <!-- Mobile Navigation Top Bar -->
@@ -243,14 +247,14 @@
     <!-- Main Content Body -->
     <div class="flex-1 flex flex-col min-w-0 w-full {% if user.is_authenticated %}md:pl-64{% endif %} min-h-screen">
         {% if user.is_authenticated %}
-        <header class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm transition-colors duration-300">
+        <header class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20 shadow-sm transition-colors duration-200">
             <div class="flex items-center space-x-3">
                 <h2 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">Welcome, <span class="text-brand-600 dark:text-brand-accent">{{ user.first_name|default:user.username }}</span></h2>
             </div>
             
             <!-- Header Controls: Dark Mode Toggle & Role Badge -->
             <div class="flex items-center space-x-2 sm:space-x-3">
-                <button onclick="toggleDarkMode()" class="p-2 px-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-all text-xs font-bold flex items-center space-x-2 border border-slate-200 dark:border-slate-600">
+                <button type="button" onclick="toggleDarkMode()" aria-label="Toggle dark mode" class="p-2 px-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-all text-xs font-bold flex items-center space-x-2 border border-slate-200 dark:border-slate-600 cursor-pointer">
                     <i id="theme-toggle-icon" class="fa-solid fa-moon"></i>
                     <span id="theme-toggle-text">Dark</span>
                 </button>
@@ -291,7 +295,44 @@
 
     <!-- Global Application Scripts -->
     <script>
-        // --- 1. SweetAlert2 Toast Global Engine ---
+        // --- 1. Dark Mode Engine ---
+        function updateThemeUI(isDark) {
+            const icon = document.getElementById('theme-toggle-icon');
+            const text = document.getElementById('theme-toggle-text');
+            
+            if (icon && text) {
+                if (isDark) {
+                    icon.className = 'fa-solid fa-sun text-amber-400';
+                    text.innerText = 'Light';
+                } else {
+                    icon.className = 'fa-solid fa-moon text-slate-600 dark:text-slate-300';
+                    text.innerText = 'Dark';
+                }
+            }
+        }
+
+        function toggleDarkMode() {
+            const isCurrentlyDark = document.documentElement.classList.contains('dark');
+            const targetDark = !isCurrentlyDark;
+
+            if (targetDark) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('app_theme_mode', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('app_theme_mode', 'light');
+            }
+
+            updateThemeUI(targetDark);
+        }
+
+        // Initialize UI state on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            updateThemeUI(isDark);
+        });
+
+        // --- 2. SweetAlert2 Toast Global Engine ---
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -326,7 +367,7 @@
             }
         });
 
-        // --- 2. NProgress Setup ---
+        // --- 3. NProgress Setup ---
         NProgress.configure({ showSpinner: false, trickleSpeed: 200 });
 
         window.addEventListener('beforeunload', () => {
@@ -351,33 +392,6 @@
                     }
                 });
             });
-        });
-
-        // --- 3. Dark Mode Management ---
-        function toggleDarkMode() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('app_theme_mode', isDark ? 'dark' : 'light');
-            updateThemeUI(isDark);
-        }
-
-        function updateThemeUI(isDark) {
-            const icon = document.getElementById('theme-toggle-icon');
-            const text = document.getElementById('theme-toggle-text');
-            
-            if (icon && text) {
-                if (isDark) {
-                    icon.className = 'fa-solid fa-sun text-amber-400';
-                    text.innerText = 'Light';
-                } else {
-                    icon.className = 'fa-solid fa-moon text-slate-600';
-                    text.innerText = 'Dark';
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const currentMode = localStorage.getItem('app_theme_mode') || 'light';
-            updateThemeUI(currentMode === 'dark');
         });
 
         // --- 4. Mobile Menu Drawer ---
