@@ -4,7 +4,7 @@ from students.models import StudentProfile
 class Event(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    event_date = models.DateField()
+    event_date = models.DateField(db_index=True)
     event_time = models.TimeField()
     venue = models.CharField(max_length=200, default="College Campus Auditorium")
     poster = models.ImageField(upload_to='events/posters/', blank=True, null=True)

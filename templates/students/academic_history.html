@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header Navigation & Action -->
+    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex items-center space-x-4">
+            {% if student.photo %}
+                <img src="{{ student.photo.url }}" alt="Profile Photo" class="w-16 h-16 rounded-2xl object-cover border-2 border-brand-500 shadow-sm">
+            {% else %}
+                <div class="w-16 h-16 rounded-2xl bg-brand-50 dark:bg-slate-700 border-2 border-brand-500 flex items-center justify-center text-brand-600 dark:text-brand-accent font-bold text-xl shadow-sm">
+                    {{ student.user.first_name|first|default:"S" }}
+                </div>
+            {% endif %}
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-black text-slate-900 dark:text-white">{{ student.user.get_full_name|default:student.user.username }}</h1>
+                    <span class="bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-brand-200 dark:border-brand-800">
+                        {{ student.student_id }}
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {{ student.course }} • Current Year: <span class="font-bold text-brand-600 dark:text-brand-400">{{ student.year }}</span> (Div {{ student.division }} - Roll {{ student.roll_number }})
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="{% url 'student_list' %}" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Directory</span>
+            </a>
+            <a href="{% url 'student_pass' student.id %}" target="_blank" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md flex items-center gap-1.5">
+                <i class="fa-solid fa-id-card"></i>
+                <span>Digital Pass</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Title Banner -->
+    <div class="bg-gradient-to-r from-brand-700 to-brand-900 text-white p-6 rounded-2xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="inline-flex items-center gap-1.5 bg-brand-accent/20 text-brand-accent text-xs font-bold px-3 py-1 rounded-full mb-2">
+                <i class="fa-solid fa-timeline"></i> Academic Milestone Ledger
+            </div>
+            <h2 class="text-lg font-black tracking-wide">Year-by-Year Academic & Activity Record</h2>
+            <p class="text-xs text-brand-100 mt-1">Complete historical progression from admission to graduation.</p>
+        </div>
+        <div class="text-right">
+            <span class="text-[11px] uppercase font-bold text-brand-200 block">Total Recorded Years</span>
+            <span class="text-2xl font-black text-brand-accent">{{ history_data|length }} Session{{ history_data|length|pluralize }}</span>
+        </div>
+    </div>
+
+    <!-- Timeline of Academic Years -->
+    <div class="space-y-6 relative before:absolute before:inset-0 before:left-5 sm:before:left-7 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700 before:z-0">
+        {% for item in history_data %}
+        <div class="relative pl-12 sm:pl-16">
+            <!-- Timeline Marker Icon -->
+            <div class="absolute left-2.5 sm:left-4.5 -translate-x-1/2 top-4 w-9 h-9 rounded-full bg-white dark:bg-slate-800 border-4 {% if item.record.status == 'Active' %}border-brand-600 text-brand-600 ring-4 ring-brand-100 dark:ring-brand-900/50{% else %}border-emerald-500 text-emerald-500{% endif %} flex items-center justify-center text-xs font-bold shadow-md z-10">
+                {% if item.record.status == 'Active' %}
+                    <i class="fa-solid fa-star text-[11px]"></i>
+                {% elif item.record.status == 'Promoted' %}
+                    <i class="fa-solid fa-arrow-up text-[11px]"></i>
+                {% else %}
+                    <i class="fa-solid fa-check text-[11px]"></i>
+                {% endif %}
+            </div>
+
+            <!-- Academic Year Card -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 overflow-hidden">
+                <!-- Card Header -->
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-800/50 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-base font-black text-slate-900 dark:text-white">
+                            {{ item.record.academic_year }}
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-black bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-700">
+                            {{ item.record.class_year }}
+                        </span>
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                            {{ item.record.course }} • Div {{ item.record.division }} • Roll No: <strong class="text-slate-800 dark:text-slate-200">{{ item.record.roll_number }}</strong>
+                        </span>
+                    </div>
+
+                    <div>
+                        {% if item.record.status == 'Active' %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700">
+                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                Currently Pursuing
+                            </span>
+                        {% elif item.record.status == 'Promoted' %}
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700">
+                                <i class="fa-solid fa-circle-check text-[10px]"></i>
+                                Promoted to Next Year
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-700">
+                                <i class="fa-solid fa-graduation-cap text-[10px]"></i>
+                                {{ item.record.status }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Card Body / Stats & Activities -->
+                <div class="p-5 space-y-5">
+                    <!-- Quick Metrics for that Academic Year -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="bg-slate-50 dark:bg-slate-700/50 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block">Events Participated</span>
+                                <span class="text-sm font-black text-slate-800 dark:text-slate-100">{{ item.events|length }} Event{{ item.events|length|pluralize }}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 dark:bg-slate-700/50 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-bold">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block">Certificates Awarded</span>
+                                <span class="text-sm font-black text-slate-800 dark:text-slate-100">{{ item.certificates|length }} Certificate{{ item.certificates|length|pluralize }}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 dark:bg-slate-700/50 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                                <i class="fa-solid fa-clipboard-user"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block">Attendance Logged</span>
+                                <span class="text-sm font-black text-slate-800 dark:text-slate-100">{{ item.attendance_count }} Session{{ item.attendance_count|pluralize }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Events & Certificates Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Events List -->
+                        <div class="bg-slate-50/60 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/50">
+                            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-brand-600 dark:text-brand-accent"></i>
+                                <span>Events Registered in {{ item.record.academic_year }}</span>
+                            </h3>
+
+                            {% if item.events %}
+                                <ul class="divide-y divide-slate-200/60 dark:divide-slate-700/60 text-xs">
+                                    {% for reg in item.events %}
+                                    <li class="py-2 flex items-center justify-between">
+                                        <div>
+                                            <span class="font-bold text-slate-800 dark:text-slate-200 block">{{ reg.event.title }}</span>
+                                            <span class="text-[10px] text-slate-400">{{ reg.event.event_date|date:"d M, Y" }} • {{ reg.event.venue }}</span>
+                                        </div>
+                                        <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded">Enrolled</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-xs text-slate-400 italic py-2">No event registrations found in this academic session.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Certificates List -->
+                        <div class="bg-slate-50/60 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/50">
+                            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                                <i class="fa-solid fa-certificate text-amber-500"></i>
+                                <span>Certificates Earned in {{ item.record.academic_year }}</span>
+                            </h3>
+
+                            {% if item.certificates %}
+                                <ul class="divide-y divide-slate-200/60 dark:divide-slate-700/60 text-xs">
+                                    {% for cert in item.certificates %}
+                                    <li class="py-2 flex items-center justify-between">
+                                        <div>
+                                            <span class="font-bold text-slate-800 dark:text-slate-200 block">{{ cert.title }}</span>
+                                            <span class="text-[10px] font-mono text-slate-400">{{ cert.certificate_id }} • {{ cert.issue_date|date:"d M, Y" }}</span>
+                                        </div>
+                                        <a href="{% url 'view_certificate' cert.certificate_id %}" target="_blank" class="text-[10px] font-bold text-brand-600 dark:text-brand-accent hover:underline flex items-center gap-1">
+                                            <i class="fa-solid fa-eye"></i> View
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-xs text-slate-400 italic py-2">No certificates issued during this academic session.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 text-center">
+            <i class="fa-solid fa-folder-open text-3xl text-slate-300 mb-2"></i>
+            <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">No academic history records found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

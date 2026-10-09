@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-brand-600 dark:text-brand-accent"></i>
+                <span>Student Academic Promotion Portal</span>
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Promote students to the next academic year (FY ➔ SY ➔ TY ➔ Alumni) and automatically preserve their year-by-year history.
+            </p>
+        </div>
+
+        <a href="{% url 'student_list' %}" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Students Directory</span>
+        </a>
+    </div>
+
+    <!-- Step 1: Filter Current Cohort Form -->
+    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 flex items-center justify-center text-[10px]">1</span>
+            <span>Select Cohort to Promote</span>
+        </h2>
+
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+                <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 block mb-1">Course</label>
+                <select name="course" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500">
+                    {% for c in courses %}
+                        <option value="{{ c }}" {% if selected_course == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 block mb-1">Current Class Year</label>
+                <select name="year" class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500">
+                    {% for y in class_years %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Load Students</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Step 2: Promotion Execution Form -->
+    <form method="POST" id="promotionForm" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Target Promotion Settings Banner -->
+        <div class="bg-gradient-to-r from-brand-700 to-brand-900 text-white p-5 rounded-2xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div>
+                <span class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-brand-accent bg-brand-accent/20 px-2.5 py-0.5 rounded-full mb-1">
+                    Step 2: Destination Settings
+                </span>
+                <h3 class="text-sm font-bold">Promotion Destination</h3>
+                <p class="text-[11px] text-brand-100">Set target academic year and class level.</p>
+            </div>
+
+            <div>
+                <label class="text-[11px] font-bold text-brand-100 block mb-1">Promote To Class Year</label>
+                <select name="target_year" required class="w-full p-2.5 bg-white text-slate-800 rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand-accent">
+                    {% for y in class_years %}
+                        <option value="{{ y }}" {% if suggested_target_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[11px] font-bold text-brand-100 block mb-1">Archived Session</label>
+                    <input type="text" name="current_session" value="{{ default_current_session }}" required class="w-full p-2.5 bg-white text-slate-800 rounded-xl text-xs font-bold" placeholder="2025-26">
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-brand-100 block mb-1">New Session</label>
+                    <input type="text" name="next_session" value="{{ default_next_session }}" required class="w-full p-2.5 bg-white text-slate-800 rounded-xl text-xs font-bold" placeholder="2026-27">
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Selection Table -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 overflow-hidden">
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-200">
+                        <input type="checkbox" id="selectAllCheckbox" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
+                        <span>Select All Students</span>
+                    </label>
+                    <span class="text-xs text-slate-400">({{ students|length }} eligible students found)</span>
+                </div>
+
+                <button type="submit" onclick="return confirmPromotion()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-up-right-dots"></i>
+                    <span>Execute Promotion Now</span>
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-900/40 text-slate-400 font-bold uppercase border-b border-slate-100 dark:border-slate-700">
+                            <th class="p-3.5 px-4 w-12 text-center">Select</th>
+                            <th class="p-3.5 px-4">Student ID</th>
+                            <th class="p-3.5 px-4">Name</th>
+                            <th class="p-3.5 px-4">Course & Class</th>
+                            <th class="p-3.5 px-4">Roll / Division</th>
+                            <th class="p-3.5 px-4 text-right">View History</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                        {% for student in students %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                            <td class="p-3.5 px-4 text-center">
+                                <input type="checkbox" name="selected_students" value="{{ student.id }}" class="student-checkbox w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
+                            </td>
+                            <td class="p-3.5 px-4 font-mono font-bold text-brand-600 dark:text-brand-400">{{ student.student_id }}</td>
+                            <td class="p-3.5 px-4">
+                                <div class="font-bold text-slate-800 dark:text-slate-100">{{ student.user.get_full_name|default:student.user.username }}</div>
+                                <div class="text-[10px] text-slate-400">{{ student.user.email }}</div>
+                            </td>
+                            <td class="p-3.5 px-4 font-medium text-slate-600 dark:text-slate-300">
+                                {{ student.course }} • <span class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-[11px] font-bold">{{ student.year }}</span>
+                            </td>
+                            <td class="p-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">
+                                Div {{ student.division }} • Roll: <strong>{{ student.roll_number }}</strong>
+                            </td>
+                            <td class="p-3.5 px-4 text-right">
+                                <a href="{% url 'student_academic_history' student.id %}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 dark:text-brand-accent hover:underline">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> Timeline
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-400 italic">
+                                No students found for {{ selected_course }} - {{ selected_year }}. Select another class or course above.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<script>
+    // Select All functionality
+    const selectAll = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        });
+    }
+
+    function confirmPromotion() {
+        const checkedCount = document.querySelectorAll('.student-checkbox:checked').length;
+        if (checkedCount === 0) {
+            alert('Please select at least one student to promote.');
+            return false;
+        }
+        return confirm(`Are you sure you want to promote ${checkedCount} student(s) to the next academic level? Their previous year's record will be permanently archived in history.`);
+    }
+</script>
+{% endblock %}

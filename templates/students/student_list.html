@@ -15,6 +15,10 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-2">
+            <a href="{% url 'promote_students' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-1.5">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Class Promotion</span>
+            </a>
             <a href="{% url 'export_students_excel' %}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-1.5">
                 <i class="fa-solid fa-file-csv"></i>
                 <span>Export Directory</span>
@@ -75,7 +79,12 @@
                         
                         <!-- CRUD Action Buttons -->
                         <td class="p-3.5 px-5 text-right">
-                            <div class="inline-flex items-center justify-end gap-2">
+                                <!-- Academic History Timeline -->
+                                <a href="{% url 'student_academic_history' student.id %}" class="inline-flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2.5 py-1.5 rounded-lg border border-indigo-200 transition text-[11px]" title="Year-by-Year History">
+                                    <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
+                                    <span>History</span>
+                                </a>
+
                                 <!-- Digital Pass / ID Card -->
                                 <a href="{% url 'student_pass' student.id %}" target="_blank" class="inline-flex items-center gap-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold px-2.5 py-1.5 rounded-lg border border-brand-100 transition text-[11px]" title="View Pass">
                                     <i class="fa-solid fa-id-card text-brand-600"></i>

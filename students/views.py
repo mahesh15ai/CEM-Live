@@ -1,5 +1,6 @@
 import base64
 import csv
+import datetime
 from datetime import timedelta
 import io
 import threading
@@ -9,6 +10,7 @@ from certificates.models import Certificate
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import transaction
@@ -19,7 +21,7 @@ from django.utils.crypto import get_random_string
 from events.models import EventRegistration
 import qrcode
 
-from .models import AnnouncementNotice, BannerImage, StudentProfile
+from .models import AnnouncementNotice, BannerImage, StudentProfile, AcademicYearRecord
 
 
 # ----------------------------------------------------
@@ -461,7 +463,9 @@ def export_students_excel(request):
 @login_required
 def student_profile_view(request):
   student = get_object_or_404(StudentProfile, user=request.user)
-  return render(request, 'students/my_profile.html', {'student': student})
+  student.sync_academic_record()
+  records = student.academic_records.all().order_by('-academic_year')
+  return render(request, 'students/my_profile.html', {'student': student, 'records': records})
 
 
 @login_required
@@ -526,6 +530,7 @@ def add_banner(request):
           badge_text=badge_text,
           image=image,
       )
+      cache.delete('home_banners')
       messages.success(request, '🎉 Banner image uploaded successfully!')
       return redirect('student_dashboard')
     else:
@@ -547,6 +552,7 @@ def add_announcement(request):
 
     if notice_text:
       AnnouncementNotice.objects.create(notice_text=notice_text, is_active=True)
+      cache.delete('latest_active_notice')
       messages.success(
           request, '📢 Announcement posted! It will remain active for 24 hours.'
       )
@@ -567,18 +573,23 @@ def student_dashboard(request):
 
   student = get_object_or_404(StudentProfile, user=request.user)
 
-  banners = BannerImage.objects.filter(is_active=True).order_by('-created_at')[
-      :5
-  ]
+  # ⚡ 3-Minute In-Memory Cache for Static Banners & Notices
+  banners = cache.get('home_banners')
+  if banners is None:
+    banners = list(BannerImage.objects.filter(is_active=True).order_by('-created_at')[:5])
+    cache.set('home_banners', banners, 180)
 
-  last_24_hours = timezone.now() - timedelta(hours=24)
-  latest_notice = (
-      AnnouncementNotice.objects.filter(
-          is_active=True, created_at__gte=last_24_hours
-      )
-      .order_by('-created_at')
-      .first()
-  )
+  latest_notice = cache.get('latest_active_notice')
+  if latest_notice is None:
+    last_24_hours = timezone.now() - timedelta(hours=24)
+    latest_notice = (
+        AnnouncementNotice.objects.filter(
+            is_active=True, created_at__gte=last_24_hours
+        )
+        .order_by('-created_at')
+        .first()
+    )
+    cache.set('latest_active_notice', latest_notice, 180)
 
   registered_events = EventRegistration.objects.filter(
       student=student
@@ -595,3 +606,185 @@ def student_dashboard(request):
       'certificates_count': certificates_count,
   }
   return render(request, 'students/student_home.html', context)
+
+
+# ----------------------------------------------------
+# Helper: Academic Year Date Range
+# ----------------------------------------------------
+def get_academic_year_date_range(academic_year_str):
+  """Parses session string '2025-26' into start date (June 1) and end date (May 31)."""
+  try:
+    parts = academic_year_str.split('-')
+    start_year = int(parts[0])
+    end_year = int(parts[1])
+    if end_year < 100:
+      end_year = (start_year // 100) * 100 + end_year
+    start_date = datetime.date(start_year, 6, 1)
+    end_date = datetime.date(end_year, 5, 31)
+    return start_date, end_date
+  except Exception:
+    return None, None
+
+
+def is_faculty_or_admin(user):
+  return (
+      user.is_superuser
+      or user.is_staff
+      or getattr(user, 'is_admin', False)
+      or getattr(user, 'is_teacher', False)
+      or hasattr(user, 'teacher_profile')
+  )
+
+
+# ----------------------------------------------------
+# 9. YEAR-BY-YEAR ACADEMIC HISTORY VIEW
+# ----------------------------------------------------
+@login_required
+def student_academic_history(request, student_id):
+  student = get_object_or_404(StudentProfile, id=student_id)
+  
+  # Allow faculty, admin, or the student themselves
+  if not is_faculty_or_admin(request.user):
+    if not hasattr(request.user, 'student_profile') or request.user.student_profile.id != student.id:
+      messages.error(request, 'Access denied. You can only view your own academic history.')
+      return redirect('student_dashboard')
+
+  student.sync_academic_record()
+  records = student.academic_records.all().order_by('-academic_year')
+  history_data = []
+
+  for rec in records:
+    start_d, end_d = get_academic_year_date_range(rec.academic_year)
+
+    events_qs = EventRegistration.objects.filter(student=student)
+    if start_d and end_d:
+      events_qs = events_qs.filter(event__event_date__range=[start_d, end_d])
+    events_list = events_qs.select_related('event')
+
+    certs_qs = Certificate.objects.filter(student=student)
+    if start_d and end_d:
+      certs_qs = certs_qs.filter(issue_date__range=[start_d, end_d])
+    certs_list = certs_qs
+
+    att_qs = AttendanceRecord.objects.filter(student=student)
+    if start_d and end_d:
+      att_qs = att_qs.filter(date__range=[start_d, end_d])
+    att_total = att_qs.count()
+
+    history_data.append({
+        'record': rec,
+        'events': events_list,
+        'certificates': certs_list,
+        'attendance_count': att_total,
+    })
+
+  context = {
+      'student': student,
+      'history_data': history_data,
+      'is_faculty': is_faculty_or_admin(request.user),
+  }
+  return render(request, 'students/academic_history.html', context)
+
+
+# ----------------------------------------------------
+# 10. BULK STUDENT YEAR PROMOTION VIEW
+# ----------------------------------------------------
+@login_required
+def promote_students(request):
+  if not is_faculty_or_admin(request.user):
+    messages.error(request, 'Access denied. Only faculty or administrators can promote students.')
+    return redirect('student_dashboard')
+
+  courses = ['BCA', 'BCS', 'BBA', 'MSC', 'BSC']
+  class_years = [
+      'First Year',
+      'Second Year',
+      'Third Year',
+      'Final Year',
+      'M.Sc Part 1',
+      'M.Sc Part 2',
+      'Alumni',
+  ]
+
+  selected_course = request.GET.get('course', 'BCA')
+  selected_year = request.GET.get('year', 'First Year')
+  students_query = StudentProfile.objects.filter(course=selected_course, year=selected_year).order_by('roll_number')
+
+  now = timezone.now()
+  cur_start = now.year if now.month >= 6 else now.year - 1
+  default_current_session = f"{cur_start}-{str(cur_start + 1)[-2:]}"
+  default_next_session = f"{cur_start + 1}-{str(cur_start + 2)[-2:]}"
+
+  next_year_map = {
+      'First Year': 'Second Year',
+      'Second Year': 'Third Year',
+      'Third Year': 'Alumni',
+      'Final Year': 'Alumni',
+      'M.Sc Part 1': 'M.Sc Part 2',
+      'M.Sc Part 2': 'Alumni',
+  }
+  suggested_target_year = next_year_map.get(selected_year, 'Second Year')
+
+  if request.method == 'POST':
+    selected_student_ids = request.POST.getlist('selected_students')
+    target_year = request.POST.get('target_year', '').strip()
+    next_session = request.POST.get('next_session', '').strip()
+    current_session = request.POST.get('current_session', '').strip()
+
+    if not selected_student_ids:
+      messages.error(request, 'Please select at least one student to promote.')
+      return redirect(f"{request.path}?course={selected_course}&year={selected_year}")
+
+    if not target_year or not next_session:
+      messages.error(request, 'Target Year and Next Academic Session are required.')
+      return redirect(f"{request.path}?course={selected_course}&year={selected_year}")
+
+    promoted_count = 0
+    with transaction.atomic():
+      for s_id in selected_student_ids:
+        stud = StudentProfile.objects.select_for_update().filter(id=s_id).first()
+        if not stud:
+          continue
+
+        if current_session:
+          old_rec = AcademicYearRecord.objects.filter(student=stud, academic_year=current_session).first()
+          if old_rec:
+            old_rec.status = 'Promoted'
+            old_rec.save()
+
+        new_status = 'Completed' if target_year == 'Alumni' else 'Active'
+        new_rec, created = AcademicYearRecord.objects.get_or_create(
+            student=stud,
+            academic_year=next_session,
+            defaults={
+                'class_year': target_year,
+                'course': stud.course,
+                'department': stud.department,
+                'division': stud.division,
+                'roll_number': stud.roll_number,
+                'status': new_status,
+            }
+        )
+        if not created:
+          new_rec.class_year = target_year
+          new_rec.status = new_status
+          new_rec.save()
+
+        stud.year = target_year
+        stud.save()
+        promoted_count += 1
+
+    messages.success(request, f"🎉 {promoted_count} students successfully promoted to {target_year} for academic session {next_session}!")
+    return redirect('student_list')
+
+  context = {
+      'courses': courses,
+      'class_years': class_years,
+      'selected_course': selected_course,
+      'selected_year': selected_year,
+      'suggested_target_year': suggested_target_year,
+      'default_current_session': default_current_session,
+      'default_next_session': default_next_session,
+      'students': students_query,
+  }
+  return render(request, 'students/promote_students.html', context)

@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}Vishwabharti Mahavidyalaya - Enterprise Portal{% endblock %}</title>
     
+    <!-- Performance Preconnections & DNS Prefetch -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    <link rel="dns-prefetch" href="https://res.cloudinary.com">
+
     <!-- Favicon Icon -->
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
@@ -61,13 +69,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- SweetAlert2 CDN -->
+    <!-- SweetAlert2 CDN (Deferred) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- NProgress Loading Bar -->
+    <!-- NProgress Loading Bar (Deferred) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
 
     <style>
         #nprogress .bar {
@@ -168,6 +176,11 @@
                     <span>Attendance Analytics</span>
                 </a>
 
+                <a href="{% url 'promote_students' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'promote_students' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-graduation-cap w-5 {% if current_url == 'promote_students' %}text-brand-600{% else %}text-indigo-300{% endif %}"></i>
+                    <span>Class Promotion</span>
+                </a>
+
                 <!-- 2. ADMIN / SUPERUSER / STAFF SECTION -->
                 {% elif user.is_superuser or user.is_staff or user.is_admin %}
                 <div class="px-3 py-1.5 text-[10px] font-extrabold text-brand-accent uppercase tracking-wider">Administration</div>
@@ -175,6 +188,11 @@
                 <a href="{% url 'student_list' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'student_list' or current_url == 'edit_student' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
                     <i class="fa-solid fa-user-graduate w-5 {% if current_url == 'student_list' %}text-brand-600{% else %}text-slate-300{% endif %}"></i>
                     <span>Students Directory</span>
+                </a>
+
+                <a href="{% url 'promote_students' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'promote_students' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-graduation-cap w-5 {% if current_url == 'promote_students' %}text-brand-600{% else %}text-indigo-300{% endif %}"></i>
+                    <span>Class Promotion</span>
                 </a>
 
                 <a href="{% url 'manage_teachers' %}" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all {% if current_url == 'manage_teachers' %}bg-white dark:bg-slate-800 text-brand-700 dark:text-brand-accent font-extrabold shadow-md{% else %}text-slate-200 hover:bg-brand-600/70 hover:text-white{% endif %}">

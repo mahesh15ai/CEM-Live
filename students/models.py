@@ -12,10 +12,10 @@ class StudentProfile(models.Model):
     student_id = models.CharField(max_length=20, unique=True, blank=True)
     
     department = models.CharField(max_length=100, default='Computer Science & IT')
-    course = models.CharField(max_length=50, default='BCA')
-    year = models.CharField(max_length=50, default='Third Year')
+    course = models.CharField(max_length=50, default='BCA', db_index=True)
+    year = models.CharField(max_length=50, default='Third Year', db_index=True)
     division = models.CharField(max_length=10, default='A')
-    roll_number = models.IntegerField()
+    roll_number = models.IntegerField(db_index=True)
     dob = models.DateField(null=True, blank=True)
 
     # 📌 storage= काढून टाकल्याने generate_filename ची एरर पूर्णपणे फिक्स होते
@@ -37,11 +37,33 @@ class StudentProfile(models.Model):
 
     @property
     def academic_session(self):
-        if self.created_at:
-            start_year = self.created_at.year
-            end_year = str(start_year + 1)[-2:]
-            return f"{start_year}-{end_year}"
-        return "2026-27"
+        dt = self.created_at if self.created_at else timezone.now()
+        start_year = dt.year if dt.month >= 6 else dt.year - 1
+        return f"{start_year}-{str(start_year + 1)[-2:]}"
+
+    def sync_academic_record(self):
+        """Ensures an active academic record exists for the student's current session."""
+        current_session = self.academic_session
+        record, created = AcademicYearRecord.objects.get_or_create(
+            student=self,
+            academic_year=current_session,
+            defaults={
+                'class_year': self.year,
+                'course': self.course,
+                'department': self.department,
+                'division': self.division,
+                'roll_number': self.roll_number,
+                'status': 'Active',
+            }
+        )
+        if not created and record.status == 'Active':
+            record.class_year = self.year
+            record.course = self.course
+            record.department = self.department
+            record.division = self.division
+            record.roll_number = self.roll_number
+            record.save()
+        return record
 
     def save(self, *args, **kwargs):
         # Student ID Auto Generation
@@ -68,6 +90,49 @@ class StudentProfile(models.Model):
             self.student_id = new_id
 
         super().save(*args, **kwargs)
+        try:
+            self.sync_academic_record()
+        except Exception:
+            pass
+
+
+class AcademicYearRecord(models.Model):
+    CLASS_YEAR_CHOICES = (
+        ('First Year', 'First Year (FY)'),
+        ('Second Year', 'Second Year (SY)'),
+        ('Third Year', 'Third Year (TY)'),
+        ('Final Year', 'Final Year (4th Year)'),
+        ('M.Sc Part 1', 'M.Sc Part 1'),
+        ('M.Sc Part 2', 'M.Sc Part 2'),
+        ('Alumni', 'Alumni / Graduated'),
+    )
+
+    STATUS_CHOICES = (
+        ('Active', 'Active / Current'),
+        ('Promoted', 'Promoted'),
+        ('Completed', 'Completed / Graduated'),
+        ('Detained', 'Detained / Repeater'),
+    )
+
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='academic_records')
+    academic_year = models.CharField(max_length=20, db_index=True, help_text="e.g. 2024-25, 2025-26, 2026-27")
+    class_year = models.CharField(max_length=50, choices=CLASS_YEAR_CHOICES, default='First Year', db_index=True)
+    course = models.CharField(max_length=50, default='BCA')
+    department = models.CharField(max_length=100, default='Computer Science & IT')
+    division = models.CharField(max_length=10, default='A')
+    roll_number = models.IntegerField(db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active', db_index=True)
+    remarks = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-academic_year', 'roll_number']
+        unique_together = ('student', 'academic_year')
+
+    def __str__(self):
+        return f"{self.student.student_id} | {self.academic_year} | {self.class_year} (Roll: {self.roll_number})"
+
 
 
 class BannerImage(models.Model):
@@ -75,7 +140,7 @@ class BannerImage(models.Model):
     subtitle = models.CharField(max_length=250, blank=True)
     badge_text = models.CharField(max_length=100, default="Annual Event")
     image = models.ImageField(upload_to='banners/')
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -84,7 +149,7 @@ class BannerImage(models.Model):
 
 class AnnouncementNotice(models.Model):
     notice_text = models.CharField(max_length=300)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_valid_24h(self):

@@ -3,9 +3,13 @@ from pathlib import Path
 import tempfile
 import cloudinary
 import dj_database_url
+from dotenv import load_dotenv
 
 # Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 # Security Settings
 SECRET_KEY = os.environ.get(
@@ -39,6 +43,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -72,18 +77,25 @@ TEMPLATES = [
 AUTH_USER_MODEL = 'accounts.User'
 
 # ------------------------------------------------------------------
-# 📌 Supabase Database Connection with Optimized Connection Pooling
+# 📌 Database Connection (Supabase / PostgreSQL with SQLite fallback)
 # ------------------------------------------------------------------
-DEFAULT_DATABASE_URL = 'postgresql://postgres.uzlhvmcghcdzeyxqqebs:Maheshmahi150904@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres'
-DATABASE_URL = os.environ.get('DATABASE_URL', DEFAULT_DATABASE_URL)
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=DATABASE_URL,
-        conn_max_age=60,  # ⚡ Keeps DB connection alive across serverless hits
-        ssl_require=True,
-    )
-}
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=60,  # ⚡ Keeps DB connection alive across serverless hits
+            ssl_require=True,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password Validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -134,11 +146,9 @@ os.makedirs(FILE_UPLOAD_TEMP_DIR, exist_ok=True)
 # 📸 Cloudinary Storage Settings
 # ------------------------------------------------------------------
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'hhnkhoen'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '977119757646888'),
-    'API_SECRET': os.environ.get(
-        'CLOUDINARY_API_SECRET', 's-HAROLo9zUq1kvO_LOw57qZJdA'
-    ),
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', ''),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', ''),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', ''),
 }
 
 cloudinary.config(
@@ -160,6 +170,20 @@ STORAGES = {
     },
 }
 
+# ⚡ Long-term browser caching for static assets (1 Year)
+WHITENOISE_MAX_AGE = 31536000
+
+# ------------------------------------------------------------------
+# ⚡ High Performance In-Memory Caching (LocMemCache)
+# ------------------------------------------------------------------
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'vishwabharti-cem-cache',
+        'TIMEOUT': 300,  # 5 minutes
+    }
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication Redirects
@@ -174,10 +198,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'tsome8522@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get(
-    'EMAIL_HOST_PASSWORD', 'oittzkqatsynbhcd'
-)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get(
-    'DEFAULT_FROM_EMAIL', 'tsome8522@gmail.com'
+    'DEFAULT_FROM_EMAIL', EMAIL_HOST_USER
 )

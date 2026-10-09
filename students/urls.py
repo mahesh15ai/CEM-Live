@@ -21,4 +21,8 @@ urlpatterns = [
     # Student Self-Service Routes
     path('my-profile/', views.student_profile_view, name='student_profile_view'),
     path('edit-my-profile/', views.edit_my_profile, name='edit_my_profile'),
+
+    # Academic Year & History Records
+    path('<int:student_id>/academic-history/', views.student_academic_history, name='student_academic_history'),
+    path('promote/', views.promote_students, name='promote_students'),
 ]

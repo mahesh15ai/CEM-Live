@@ -5,6 +5,10 @@ ENV/
 
 # Database & Secret files
 *.sqlite3
+.env
+.env.local
+.env.*.local
+
 
 # Python Cache & Bytecode
 __pycache__/

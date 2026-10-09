@@ -18,7 +18,7 @@ class Certificate(models.Model):
     title = models.CharField(max_length=200)
     certificate_type = models.CharField(max_length=50, choices=CERT_TYPES, default='Event Participation')
     description = models.TextField(blank=True, null=True)
-    issue_date = models.DateField(auto_now_add=True)
+    issue_date = models.DateField(auto_now_add=True, db_index=True)
 
     def save(self, *args, **kwargs):
         if not self.certificate_id:
